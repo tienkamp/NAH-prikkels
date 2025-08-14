@@ -13,9 +13,8 @@
     ul.checklist li{border-radius:6px;}
     label{cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;padding:10px;}
     label:hover{background:#f5f7fb;}
-    .advice-area{margin-top:18px;padding:12px;border-radius:8px;background:#fff;border:1px dashed #e1e6f0}
-    .advice{margin:8px 0;padding:10px;border-radius:6px;background:#f1f8ff;border-left:4px solid #4b9fff;opacity:0;animation:fadeIn 0.4s ease forwards;white-space:normal;}
-    @keyframes fadeIn { from {opacity:0;transform:translateY(5px)} to {opacity:1;transform:translateY(0)} }
+    .advice-area{margin-top:18px;padding:12px;border-radius:8px;background:#fff;border:1px dashed #e1e6f0;}
+    .advice{margin:8px 0;padding:10px;border-radius:6px;white-space:normal;transition:background-color 0.3s ease;display:flex;justify-content:space-between;align-items:center;gap:10px;}
     .controls{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
     button{padding:10px 14px;border-radius:6px;border:1px solid #d0d6e6;background:#fff;cursor:pointer;flex:1;min-width:120px}
     button.secondary{background:#f7f9fc}
@@ -23,24 +22,40 @@
     .show {display:block;}
     .more-link {color:#0056b3;cursor:pointer;text-decoration:underline;font-size:0.9em;display:inline-block;}
     input[type="checkbox"] {width:20px;height:20px;flex-shrink:0;}
-       ul.checklist li {
-    display:flex;
-    align-items:center:
-    gap:12px;
+    ul.checklist li {display:flex;align-items:center;gap:12px;}
+    .extra-questions {margin-left:32px;margin-bottom:8px;}
+    .extra-questions label {font-weight:normal;display:block;margin-top:4px;}
+
+    .extra-questions input[type="range"]{
+      -webkit-appearance:none; appearance:none;
+      width:220px; height:6px; border-radius:9999px; outline:none;
+      background:#e9eef7;
+    }
+    .extra-questions input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none; appearance:none;
+      width:18px; height:18px; border-radius:50%; background:#ffffff; border:2px solid #c4cfe4;
+      cursor:pointer;
+    }
+    .extra-questions input[type="range"]::-moz-range-thumb{
+      width:18px; height:18px; border-radius:50%; background:#ffffff; border:2px solid #c4cfe4; cursor:pointer;
+    }
+
+    #scoreDisplay {margin-top:10px;font-weight:bold;}
+    .score-badge{
+      border-radius:12px;
+      padding:4px 8px;
+      font-size:0.85em;
+      font-weight:bold;
+      flex-shrink:0;
     }
   </style>
 </head>
 <body>
   <h1>Checklist NAH prikkelgevoeligheid</h1>
   <form id="checklistForm" novalidate>
-
-     <ul class="checklist">
- <li>de tekst hieronder is onuist. dit is alleen een test om het script van deze pagina te testen
-        <b>Symptomen</b>            
-  </li>
-  
-  
-  <li>
+    <ul class="checklist">
+      <li><b>Symptomen</b></li>
+          <li>
         <input type="checkbox" id="item-1" data-advice='Je geeft aan dat je last heb van Hoofdpijn of druk in hoofd. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.  'data-more='Wanneer je in staat bent om onderstaande punten op een of andere manier te verwijderen/verminderen en hierdoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'  />
         <label for="item-1">Hoofdpijn of druk in hoofd</label>
       </li>
@@ -208,9 +223,21 @@
         <input type="checkbox" id="item-24" data-advice='Te lang in één houding' data-more='Uitgebreidere uitleg over regel 2.'/>
         <label for="item-24">Te lang in één houding</label>
       </li>
-  
-      
-       <div class="controls">
+   
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+      <!-- Meer vragen toevoegen kan hier -->
+    </ul>
+
+    <div class="controls">
       <button type="button" id="selectAll">Alles aanvinken</button>
       <button type="button" id="clearAll" class="secondary">Alles uitvinken</button>
     </div>
@@ -218,35 +245,89 @@
     <div class="advice-area" id="adviceArea" aria-live="polite">
       <em>Zet een vinkje op een regel om het bijbehorende advies te tonen.</em>
     </div>
+    <div id="scoreDisplay"></div>
   </form>
-
-
-
-
-
 
   <script>
     const form = document.getElementById('checklistForm');
-    const checkboxes = Array.from(form.querySelectorAll('input[type="checkbox"]'));
+    const checkboxes = () => Array.from(form.querySelectorAll('input[type="checkbox"]'));
     const adviceArea = document.getElementById('adviceArea');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    let moreIdCounter = 0;
 
-    let moreIdCounter = 0; // unieke ids voor meer/minder blokken
+    function interpolateColor(color1, color2, factor) {
+      const res = color1.map((c, i) => Math.round(c + factor * (color2[i] - c)));
+      return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
+    }
+    function getColorForScore(score) {
+      if (score <= 5) {
+        return interpolateColor([214,234,255],[255,243,176], score/5);
+      }
+      return interpolateColor([255,243,176],[255,153,153], (score-5)/5);
+    }
+
+    function getItemScoreFromCheckbox(cbEl){
+      const q = cbEl.parentNode.querySelector('.extra-questions');
+      if (!q) return null;
+      const sliders = q.querySelectorAll('input[type="range"]');
+      if (sliders.length < 2) return null;
+      const a = parseInt(sliders[0].value, 10);
+      const b = parseInt(sliders[1].value, 10);
+      if (Number.isNaN(a) || Number.isNaN(b)) return null;
+      return a + b;
+    }
+
+    function paintSlider(sliderEl, color){
+      const min = parseInt(sliderEl.min,10);
+      const max = parseInt(sliderEl.max,10);
+      const val = parseInt(sliderEl.value,10);
+      const pct = Math.round(((val - min) / (max - min)) * 100);
+      sliderEl.style.background = `linear-gradient(to right, ${color} ${pct}%, #e9eef7 ${pct}%)`;
+    }
+    function colorizeSlidersForCheckbox(cbEl, color){
+      const q = cbEl.parentNode.querySelector('.extra-questions');
+      if (!q) return;
+      q.querySelectorAll('input[type="range"]').forEach(sl => paintSlider(sl, color));
+    }
 
     function renderAdvices() {
       adviceArea.innerHTML = '';
-      const checked = checkboxes.filter(cb => cb.checked);
+      const checked = checkboxes().filter(cb => cb.checked);
       if (checked.length === 0) {
         adviceArea.innerHTML = '<em>Zet een vinkje op een regel om het bijbehorende advies te tonen.</em>';
+        scoreDisplay.textContent = '';
         return;
       }
+
+      let totalScore = 0;
+      let countedItems = 0;
+
       checked.forEach((cb, index) => {
         const text = cb.dataset.advice || 'Geen advies opgegeven.';
         const more = cb.dataset.more || '';
-
         const wrapper = document.createElement('div');
         wrapper.className = 'advice';
-        wrapper.style.animationDelay = `${index * 0.1}s`;
-        wrapper.append(document.createTextNode(text));
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = text;
+        wrapper.appendChild(textSpan);
+
+        const itemScore = getItemScoreFromCheckbox(cb);
+        if (itemScore !== null) {
+          const color = getColorForScore(itemScore);
+          wrapper.style.backgroundColor = color;
+          totalScore += itemScore;
+          countedItems += 1;
+          colorizeSlidersForCheckbox(cb, color);
+
+          const badge = document.createElement('span');
+          badge.className = 'score-badge';
+          badge.textContent = `Score: ${itemScore}/10`;
+          badge.style.backgroundColor = color;
+          badge.style.border = '1px solid rgba(0,0,0,0.1)';
+          badge.style.color = '#333';
+          wrapper.appendChild(badge);
+        }
 
         if (more) {
           const moreLink = document.createElement('span');
@@ -269,18 +350,63 @@
 
         adviceArea.appendChild(wrapper);
       });
+
+      if (countedItems > 0) {
+        const avg = totalScore / countedItems;
+        scoreDisplay.textContent = `Totaalscore: ${totalScore} | Gemiddelde per vraag: ${avg.toFixed(1)} / 10`;
+      } else {
+        scoreDisplay.textContent = '';
+      }
     }
 
-    // ✅ iPhone-proof: 1) event-delegatie op het formulier, 2) renderen in rAF zodat de checked-status al is bijgewerkt
+    function ensureExtraQuestionsFor(cb){
+      let q = cb.parentNode.querySelector('.extra-questions');
+      if (!cb.checked) {
+        if (q) q.remove();
+        return;
+      }
+      if (!q) {
+        q = document.createElement('div');
+        q.className = 'extra-questions';
+        q.innerHTML = `
+          <label>Hoe intens beleef je het:
+            <input type="range" min="1" max="5" step="1" value="3">
+            <span>3</span>
+          </label>
+          <label>maandelijks, wekelijks, dagelijks, altijd:
+            <input type="range" min="1" max="5" step="1" value="3">
+            <span>3</span>
+          </label>
+        `;
+        cb.parentNode.appendChild(q);
+
+        const sliders = q.querySelectorAll('input[type="range"]');
+        sliders.forEach(sl => {
+          sl.nextElementSibling.textContent = sl.value;
+          sl.addEventListener('input', () => {
+            sl.nextElementSibling.textContent = sl.value;
+            updateUI();
+          });
+        });
+      }
+    }
+
+    function handleExtraQuestions() {
+      checkboxes().forEach(cb => ensureExtraQuestionsFor(cb));
+    }
+
+    function updateUI(){
+      handleExtraQuestions();
+      renderAdvices();
+    }
+
     form.addEventListener('click', (e) => {
-      if (adviceArea.contains(e.target)) return; // klik op "meer/minder" mag adviezen niet heropbouwen
+      if (adviceArea.contains(e.target)) return;
       const target = e.target.closest('label, input[type="checkbox"]');
       if (!target) return;
-      // wacht tot na de native toggle van het vinkje
-      requestAnimationFrame(renderAdvices);
+      requestAnimationFrame(updateUI);
     });
 
-    // Event-delegatie voor meer/minder zodat het overal werkt
     adviceArea.addEventListener('click', (e) => {
       const link = e.target.closest('.more-link');
       if (!link) return;
@@ -291,26 +417,16 @@
       link.textContent = expanded ? ' minder' : ' meer';
     });
 
-    // Toetsenbordondersteuning (Enter/Spatie)
-    adviceArea.addEventListener('keydown', (e) => {
-      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('more-link')) {
-        e.preventDefault();
-        e.target.click();
-      }
-    });
-
-    // Knoppen
     document.getElementById('selectAll').addEventListener('click', () => {
-      checkboxes.forEach(cb => cb.checked = true);
-      renderAdvices();
+      checkboxes().forEach(cb => cb.checked = true);
+      updateUI();
     });
     document.getElementById('clearAll').addEventListener('click', () => {
-      checkboxes.forEach(cb => cb.checked = false);
-      renderAdvices();
+      checkboxes().forEach(cb => cb.checked = false);
+      updateUI();
     });
 
-    // Eerste render
-    renderAdvices();
+    updateUI();
   </script>
 </body>
 </html>
