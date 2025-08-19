@@ -1,434 +1,500 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Checklist NAH prikkelgevoeligheid</title>
-  <style>
-    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;}
-    body{max-width:720px;margin:36px auto;padding:18px}
-    h1{font-size:1.4rem;margin-bottom:6px}
-    form{background:#fbfbfb;border:1px solid #eee;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.02)}
-    ul.checklist{list-style:none;padding:0;margin:0 0 12px 0}
-    ul.checklist li{border-radius:6px;}
-    label{cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;padding:10px;}
-    label:hover{background:#f5f7fb;}
-    .advice-area{margin-top:18px;padding:12px;border-radius:8px;background:#fff;border:1px dashed #e1e6f0;}
-    .advice{margin:8px 0;padding:10px;border-radius:6px;white-space:normal;transition:background-color 0.3s ease;display:flex;justify-content:space-between;align-items:center;gap:10px;}
-    .controls{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
-    button{padding:10px 14px;border-radius:6px;border:1px solid #d0d6e6;background:#fff;cursor:pointer;flex:1;min-width:120px}
-    button.secondary{background:#f7f9fc}
-    .more-text {display:none;margin-top:6px;font-size:0.9em;color:#333;white-space:normal;}
-    .show {display:block;}
-    .more-link {color:#0056b3;cursor:pointer;text-decoration:underline;font-size:0.9em;display:inline-block;}
-    input[type="checkbox"] {width:20px;height:20px;flex-shrink:0;}
-    ul.checklist li {display:flex;align-items:center;gap:12px;}
-    .extra-questions {margin-left:32px;margin-bottom:8px;}
-    .extra-questions label {font-weight:normal;display:block;margin-top:4px;}
-
-    .extra-questions input[type="range"]{
-      -webkit-appearance:none; appearance:none;
-      width:220px; height:6px; border-radius:9999px; outline:none;
-      background:#e9eef7;
-    }
-    .extra-questions input[type="range"]::-webkit-slider-thumb{
-      -webkit-appearance:none; appearance:none;
-      width:18px; height:18px; border-radius:50%; background:#ffffff; border:2px solid #c4cfe4;
-      cursor:pointer;
-    }
-    .extra-questions input[type="range"]::-moz-range-thumb{
-      width:18px; height:18px; border-radius:50%; background:#ffffff; border:2px solid #c4cfe4; cursor:pointer;
-    }
-
-    #scoreDisplay {margin-top:10px;font-weight:bold;}
-    .score-badge{
-      border-radius:12px;
-      padding:4px 8px;
-      font-size:0.85em;
-      font-weight:bold;
-      flex-shrink:0;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checklist NAH prikkelgevoeligheid</title>
+<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  body{max-width:860px;margin:36px auto;padding:18px}
+  h1{font-size:1.4rem;margin:0 0 8px}
+  h2{font-size:1.1rem;margin:16px 0 10px}
+  form{background:#cbf5dd;border:1px solid #eee;padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.03)}
+  .section{margin-bottom:18px}
+  .section.hidden{display:none}
+  ul.checklist{list-style:none;padding:0;margin:0}
+  ul.checklist li{display:flex;align-items:flex-start;gap:10px;padding:8px;border-radius:8px}
+  ul.checklist li:hover{background:#cbf5dd}
+  input[type="checkbox"]{width:20px;height:20px;flex-shrink:0;margin-top:4px}
+  label{cursor:pointer;display:inline-block;padding:6px 8px;border-radius:6px}
+  .inline-actions{display:flex;align-items:center;gap:8px;margin:2px 0 0 0}
+  .inline-more{border:1px solid #41dc8e;background:#fff;border-radius:6px;padding:4px 8px;font-size:.88rem;cursor:pointer}
+  .inline-more-text{background:#fff;border:1px dashed #e1e6f0;padding:8px;border-radius:8px;margin:6px 0 0 30px}
+  .extra-questions{margin:8px 0 2px 30px}
+  .extra-questions label{display:block;margin:6px 0}
+  .extra-questions input[type="range"]{
+    -webkit-appearance:none;appearance:none;width:280px;height:6px;border-radius:9999px;background:#2eb774;outline:none
+  }
+  .extra-questions input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #c4cfe4;cursor:pointer
+  }
+  .extra-questions input[type="range"]::-moz-range-thumb{
+    width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #c4cfe4;cursor:pointer
+  }
+  .controls,.wizard-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .controls button,.wizard-controls button{min-width:120px;padding:10px 14px;border-radius:8px;border:1px solid #d0d6e6;background:#fff;cursor:pointer}
+  .controls button.secondary,.wizard-controls button.secondary{background:#f7f9fc}
+  .divider{height:1px;background:#e9eef4;margin:10px 0;flex:1 1 100%}
+  .wizard-progress{font-size:.95rem;color:#4a5568;margin:6px 0 8px}
+  .cause-item{display:none}
+  .cause-item.active{display:block}
+  .advice-area{margin-top:16px;padding:12px;border-radius:10px;background:#fff;border:1px dashed #e1e6f0}
+  .advice{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;padding:10px;border-radius:8px;transition:background-color .25s}
+  .score-badge{border-radius:12px;padding:4px 8px;font-size:.86rem;font-weight:700;border:1px solid rgba(0,0,0,.08)}
+  .more-link{color:#198450;cursor:pointer;text-decoration:underline;font-size:.9rem;margin-left:6px}
+  .more-text{display:none;margin-top:6px;font-size:.92rem}
+  .show{display:block}
+  #scoreDisplay{margin-top:10px;font-weight:700}
+ 
+</style>
 </head>
 <body>
-  <h1>Checklist NAH prikkelgevoeligheid</h1>
+  <h1>Checklist oorzaken overprikkeld zijn</h1>
 
-  Deze pagina is nog niet klaar. Hecht dus geen waarde aan de teksten
   <form id="checklistForm" novalidate>
-    <ul class="checklist">
-      <li><b>Symptomen</b></li>
-          <li>
-        <input type="checkbox" id="item-1" data-advice='Je geeft aan dat je last heb van Hoofdpijn of druk in hoofd. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.  'data-more='Wanneer je in staat bent om onderstaande punten op een of andere manier te verwijderen/verminderen en hierdoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'  />
-        <label for="item-1">Hoofdpijn of druk in hoofd</label>
-      </li>
+    <!-- DEEL 1: Symptomen (1–4) -->
+    <section id="symptomsSection" class="section">
+     DEZE PAGINA IS IN DE MAAK. DE TEKSTEN ZIJN ONBRUIKBAAR.     <br> Een testje om jouw gedachten op gang te brengen over punten die te maken kunnen hebben met jouw hersenletsel. Zoek een rustig moment en rustige plek op om deze vragen te bekijken.
+     Kies hieronder eerst een of meerdere symptomen. 
+     
+      <h2>Symptomen</h2>
+      <ul class="checklist" id="symptomList">      
+     <li>
+          <input type="checkbox" id="symp-4" data-advice="Je geeft aan dat voor jouw gevoel alles “te veel” is. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Problemen hebben met -snel- schakelen kan leiden tot aggressieve gevoelens, maar ook vermoeidheid en gewoon het gevoel dat alles te veel is. Hopelijk heb je iets aan de suggesties hierna. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te verwijderen/verminderen waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen">
+          <div>
+            <label for="symp-5">Gevoel dat alles “te veel” is</label>
+            <div class="inline-actions">
+              <button type="button" class="inline-more">meer</button>
+            </div>
+            <div class="inline-more-text" hidden></div>
+          </div>
+        </li>   
+     <li>
+          <input type="checkbox" id="symp-3" data-advice="Je geeft aan dat je last heb van een kort lontje / emotioneel sneller geraakt bent. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.Kijk naar de door jou aangevinkte oorzaken en denk daar over na. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Kort lontje / emotioneel sneller geraakt zijn is vermoeiend en kan jou en je omgeving onzeker maken. Bekijk daarom goed de oorzaken die hiern volgen. Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten blijft het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen">
+          <div>
+            <label for="symp-3">Kort lontje / emotioneel sneller geraakt</label>
+            <div class="inline-actions">
+              <button type="button" class="inline-more">meer</button>
+            </div>
+            <div class="inline-more-text" hidden></div>
+          </div>
+        </li> 
+     <li>
+     
+          <input type="checkbox" id="symp-1" data-advice="Je geeft aan dat je last heb van Hoofdpijn of druk in je hoofd. Dit kan het gevolg zijn van overprikkeling. Maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Hoofdpijn of druk in hoofd is erg vervelend. Kijk naar de eventuele oorzaken die straks worden voorgelegd. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen.">
+          <div>
+            <label for="symp-1">Hoofdpijn of druk in hoofd</label>
+            <div class="inline-actions">
+              <button type="button" class="inline-more">meer</button>
+            </div>
+            <div class="inline-more-text" hidden></div>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="symp-2" data-advice="Je geeft aan dat je last heb van wazig zien of moeite met scherpstellen.  Dit kan het gevolg zijn van overprikkeling. Maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Wazig zien of moeite met scherpstellen is verwarrend en soms gevaarlijk. Je wit alles wel goed blijven zien. Vraag je dus goed af of de oorzaken die worden gepresenteerd herkenbaar zijn. Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen en waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts of oogarts te raadplegen en minder te vertrouwen op dit soort uitslagen">
+          <div>
+            <label for="symp-2">Wazig zien of moeite met scherpstellen</label>
+            <div class="inline-actions">
+              <button type="button" class="inline-more">meer</button>
+            </div>
+            <div class="inline-more-text" hidden></div>
+          </div>
+        </li>
+       
+        <li>
+          <input type="checkbox" id="symp-4" data-advice="Je geeft aan dat je moeite hebt met concentreren of woorden vinden. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Moeite hebben met concentreren of woorden vinden betekent zeker niet dat je dom bent. Na een NAH is ook dit een veel voorkomende klacht. Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen.">
+          <div>
+            <label for="symp-4">Moeite met concentreren of woorden vinden</label>
+            <div class="inline-actions">
+              <button type="button" class="inline-more">meer</button>
+            </div>
+            <div class="inline-more-text" hidden></div>
+          </div>
+        </li>
       
-      
-      <li>
-        <input type="checkbox" id="item-2" data-advice='Je geeft aan dat je last heb van wazig zien of moeite met scherpstellen. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.  'data-more='Wanneer je in staat bent om onderstaande punten op een of andere manier te verwijderen/verminderen en hierdoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'  />
-        <label for="item-2">Wazig zien of moeite met scherpstellen</label>
-      </li>
-      
-      
-      <li>
-        <input type="checkbox" id="item-3" data-advice='Je geeft aan dat je last heb van een kort lontje / emotioneel sneller geraakt bent. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.  'data-more='Wanneer je in staat bent om onderstaande punten op een of andere manier te verwijderen/verminderen en hierdoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'  />
-        <label for="item-3">Kort lontje / emotioneel sneller geraakt</label>
-      </li>
-      
-
-      <li>
-        <input type="checkbox" id="item-4" data-advice='Je geeft aan dat je moeite hebt met concentreren of woorden vinden. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.   'data-more='Wanneer je in staat bent om onderstaande punten op een of andere manier te verwijderen/verminderen en hierdoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'  />
-        <label for="item-4">Moeite met concentreren of woorden vinden</label>
-      </li>
+          
+      </ul>
 
 
+      <div class="controls">
+      <button type="button" id="goToCauses" class="secondary"><b>Verder naar vermoedelijke oorzaken</b></button>
+ <span class="divider"></span>
 
-    <li>
-        <input type="checkbox" id="item-5" data-advice='Je geeft aan dat je het gevoel dat alles “te veel” is. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.  'data-more='Wanneer je in staat bent om onderstaande op een of andere manier te verwijderen/verminderen en hierdoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'  />
-        <label for="item-5">Gevoel dat alles “te veel” is</label>
-      </li>
-      
-<li>
-      <B></B>
-  </li>
+       <button type="button" id="sympSelectAll">Alles aanvinken</button>
+        <button type="button" id="sympClearAll" class="secondary">Alles uitvinken</button>
+                     </div>
+    </section>
 
-      
-<br.></br.><li>
-      <B>Waar ben je gevoelig voor</B>
-  </li>
+    <!-- DEEL 2: Oorzaken (wizard; 20 vragen) -->
+    <section id="causesSection" class="section hidden" aria-live="polite">
+      <h2>Vermoedelijke oorzaken</h2>
+      <div class="wizard-progress" id="wizardProgress">testtekst</div>
 
-
-    
- <li>
-        <input type="checkbox" id="item-6" data-advice='Fel licht / zon / TL-verlichting. 'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Kun je naar een andere plek gaan waar het licht anders is? Zonnebril? Kijk of de TL vervangen kan worden door LED verlichting. (Ook voor jouw werkgever aantrekkelijke investering).  Als dit niet lukt overleg dan met je huisarts.'/> 
+      <ul class="checklist" id="causeList">
+        <!-- Oorzaak 1..20 (pas de labels/adviezen/uitleg gerust aan) -->
+        <li class="cause-item active">
+          <input type="checkbox" id="cause-1" data-advice="Jouw overgevoeligheid voor knipperende schermen / veel visuele beweging is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Er zijn schermen die rustiger zijn. Kijk hier eens naar in een elektronica zaak. Vaak wordt een e-inkt scherm als prettig ervaren omdat het lijkt op papier. Visuele beweging is veel aanwezig. Niet altijd bewust. Veel reclame-makers willen in korte tijd zoveel mogelijk informatie kwijt. Die snelle infromatie zet zich als trent voor in tv programma s waarin bewust snel wordt gesproken of versneld wordt afgedraaid. Je kunt reclameboodschappen missen door tv programma s achteraf te bekijken. in veel gevallen kijk je dan reclamevrij. Ook hebben steeds meer aanbieders de moglijkheid om de snelheid te vertragen. (oa. Youtube en Netflix). Zeker het ptoberen waard.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more='Knipperende schermen / veel visuele beweging kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'
+          <div>
+            <label for="cause-1">Knipperende schermen / veel visuele beweging</label>
+                      </div>
+        </li>
         
-        <label for="item-6">Fel licht / zon / TL-verlichting </label>
-      </li>
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-2" data-advice="Jouw overgevoeligheid voor fel licht / zon / TL-verlichting is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Kun je naar een andere plek gaan waar het licht anders is? Zonnebril? Kijk of de TL vervangen kan worden door LED verlichting. (Ook voor jouw werkgever aantrekkelijke investering).  Als dit niet lukt overleg dan met je huisarts.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Fel licht / zon / TL-verlichting kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-2">Fel licht / zon / TL-verlichting</label></div></li>
+        
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-3" data-advice=" Harde geluiden dragen vaak bij aan overprikkeld raken. Denk hierbij apparaten, schreeuwende mensen, bonkende achtergondmuziek, etc. Jouw overgevoeligheid voor een drukke of rommelige omgeving is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Soms kun je (onopvallende) oordopjes overwegen of op zoek gaan naar ruimtes waar je het wel fijn vindt. In sommige steden is de openbare bibliotheek zo'n ruimte waar je prikkelarm mensen kun ontmoeten of gewoon je eigen ding doen. Ook komen er steeds meer prikkelarme cafe's en restaurants. Nog niet genoeg, maar het besef groeit. In veel restaurants wordt niet geschockeerd gereageerd als je vraagt of de muziek wat zachter mag. Het is toch ook vreemd dat je - dat je dat schreeuwend boven de muziek uit- op een plek bent waar je elkaar gezellig wilt ontmoeten?  Belangrijk om dit feit te bespreken met jezelf en je omgeving. Begrip en acceptatie vormen een basis voor minder heftige prikkels. Kun je naar een andere plek gaan? Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Een drukke of rommelige omgeving kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-3">Drukke of rommelige omgeving/ Harde geluiden</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-4" data-advice="Je bent gevoelig voor sterke geuren (parfum, schoonmaak, kooklucht). Ook hier geld dat jij zelf op zoek moet gaan naar situaties of een omgeving waar je dit niet tegen komt. Of even de ruimte verlaten. Wees hier vrij in. Als je je hier onzeker over voelt is het belangrijk dit als een feit te accepteren en hierover met de mensen om je heen te communiceren. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Sterke geuren (parfum, schoonmaak, kooklucht) kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-4">Sterke geuren (parfum, schoonmaak, kooklucht)</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-5" data-advice="Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Temperatuur: te warm / koud / benauwd kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-5">Temperatuur: te warm / koud / benauwd</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-6" data-advice="Jouw overgevoeligheid voor een drukke of rommelige omgeving is een feit en is dus niet even af te leren. Wel kun je proberen er mee om te gaan. Soms kun je (onopvallende) oordopjes overwegen of koptelefoon met noice cancelling. Deze techniek wordt ook steeds vaker toegepast in gehoorapparaten terwijl de 'oude' gehoorapparaten deze geluiden vaak versterken. Niet alles is te vermijden, maar even in een andere ruimte gaan zitten of de zojuist genoemde oordopjes kunnen prikkels wegnemen. Houdt ze niet constant in want gewenning ligt op de loer." data-more="Achtergrondgeluid (koelkast, verkeer, airco) kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-6">Achtergrondgeluid (koelkast, verkeer, airco)</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-7" data-advice="Dit kan het gevolg zijn van overprikkeling. Maar dat hoeft niet.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Onverwachte aanrakingen of drukte om je heen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-7">Onverwachte aanrakingen of drukte om je heen</label></div></li>
+        
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-8" data-advice="Het klinkt misschien erg effectief. Terwijl jij het nieuws kijkt ook nog even je whatsapp checken. Multitasken draagt bij aan dat overprikkelde gevoel. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Multitasken of snel schakelen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-8">Multitasken of snel schakelen</label></div></li>
+        
+        
+        
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-9" data-advice="Veel nieuwe informatie zorgt sneller voor overprikkeling, omdat je in zo’n situatie veel meer nieuwe details in je op moet nemen .Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Veel nieuwe informatie tegelijk kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-9">Veel nieuwe informatie tegelijk</label></div></li>
+        
+        
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-10" data-advice="Advies bij oorzaak 10.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Gesprekken in een groep volgen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-10">Gesprekken in een groep volgen</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-11" data-advice="Advies bij oorzaak 11.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Snel lezen / veel beeldschermwerk kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-11">Snel lezen / veel beeldschermwerk</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-12" data-advice="Bij een bekende plek weet je bijvoorbeeld de weg, ken je de regels en gewoontes en weet je wat je moet doen. In een nieuwe situatie is alles nieuw en gaat je brein ook vaak heel veel verschillende scenario’s uitdenken om te voorkomen dat het ergens mis gaat .Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Nieuwe omgeving of route kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-12">Nieuwe omgeving of route</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-13" data-advice="Adviesje bij oorzaak 13.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Stress of spanning in jezelf kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-13">Stress of spanning in mezelf</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-14" data-advice="Emoties die je overneemt van anderen kunnen behoorlijk belastend kunnen zijn. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Sterke emoties van anderen< kunnen een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-14">Sterke emoties van anderen</label></div></div></li>
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-15" data-advice="Advies bij oorzaak 15. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Hectische of onrustige sfeer kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-15">Hectische of onrustige sfeer</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-16" data-advice="Advies bij oorzaak 16. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Vermoeidheid / slecht geslapen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-16">Vermoeidheid / slecht geslapen</label></div></li>
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-17" data-advice="Advies bij oorzaak 17. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Honger / uitdroging kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-17">Honger / uitdroging</label></div></li>
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-18" data-advice="Advies bij oorzaak 18. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Pijn of ongemak kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-18">Pijn of ongemak</label></div></li>
+        
+        
+        
+        
+        <li class="cause-item"><input type="checkbox" id="cause-19" data-advice="Advies bij oorzaak 19." data-more="Te lang in één houding kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-19">Te lang in één houding</label></div></li>
+        
+               
+        <li class="cause-item"><div><label for="cause-20">Resulaat</label>
+        
+      </ul>
+</div></li>
+      <div class="wizard-controls">
+        <button type="button" id="prevCause" class="secondary">Vorige</button>
+        <button type="button" id="nextCause">Volgende</button>
+        <button type="button" id="finishWizard" class="secondary" style="display:none">toon</button>
+      </div>
+    </section>
 
-
-
- <li>
-        <input type="checkbox" id="item-7" data-advice='Knipperende schermen/ veel visuele beweging'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Er zijn schermen die rustiger zijn. Kijk hier eens naar in een elektronica zaak. Vaak wordt een e-inkt scherm als prettig ervaren omdat het lijkt op papier. Visuele beweging is veel aanwezig. Niet altijd bewust. Veel reclame-makers willen in korte tijd zoveel mogelijk informatie kwijt. Die snelle infromatie zet zich als trent voor in tv programma s waarin bewust snel wordt gesproken of versneld wordt afgedraaid. Je kunt reclameboodschappen missen door tv programma s achteraf te bekijken. in veel gevallen kijk je dan reclamevrij. Ook hebben steeds meer aanbieders de moglijkheid om de snelheid te vertragen. (oa. Youtube en Netflix). Zeker het ptoberen waard.'/>
-        <label for="item-7">Knipperende schermen / veel visuele beweging</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-8" data-advice='Drukke of rommelige omgeving' data-more='Uouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.'/>
-        <label for="item-8">Drukke of rommelige omgeving</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-9" data-advice='Sterke geuren (parfum, schoonmaak, kooklucht)' data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.'/>
-        <label for="item-9">Sterke geuren (parfum, schoonmaak, kooklucht)</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-10" data-advice='Temperatuur: te warm / koud / benauwd'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.' />
-        <label for="item-10">Temperatuur: te warm / koud / benauwd</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-11" data-advice='Achtergrondgeluid (koelkast, verkeer, airco)'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.' />
-        <label for="item-11">Achtergrondgeluid (koelkast, verkeer, airco)” is</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-12" data-advice='Onverwachte aanrakingen of drukte om je heen'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.' />
-        <label for="item-12">Onverwachte aanrakingen of drukte om je heen</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-13" data-advice='Multitasken of snel schakelen' data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.'/>
-        <label for="item-13">Multitasken of snel schakelen</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-14" data-advice='Veel nieuwe informatie tegelijk'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.' />
-        <label for="item-14">Veel nieuwe informatie tegelijk</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-15" data-advice='Gesprekken in een groep volgen' data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.'/>
-        <label for="item-15">Gesprekken in een groep volgen</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-16" data-advice='Snel lezen / veel beeldschermwerk' data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.'/>
-        <label for="item-16">Snel lezen / veel beeldschermwerk</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-17" data-advice='Nieuwe omgeving of route'data-more='Jouw overgevoeligheid is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.' />
-        <label for="item-17">Nieuwe omgeving of route</label>
-      </li>
-
-
- <li>
-        <input type="checkbox" id="item-18" data-advice='Stress of spanning in mezelf' data-more='Jouw overgevoeligheid is een feit. Als je stressfactoren kun vermijden, moet je dat doen, maar niet alles is te vermijden, helaas.  en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving.'/>
-        <label for="item-18">Stress of spanning in mezelf</label>
-      </li>
-
-
- <li>
-        <input type="checkbox" id="item-19" data-advice='Sterke emoties van anderen'data-more='Uitgebreidere uitleg over regel 2.' />
-        <label for="item-19">Sterke emoties van anderen</label>
-      </li>
-
-
- <li>
-        <input type="checkbox" id="item-20" data-advice='Hectische of onrustige sfeer' data-more='Uitgebreidere uitleg over regel 2.'/>
-        <label for="item-20">Hectische of onrustige sfeer</label>
-      </li>
-
-
- <li>
-        <input type="checkbox" id="item-21" data-advice='Vermoeidheid / slecht geslapen'data-more='Uitgebreidere uitleg over regel 2.' />
-        <label for="item-21">Vermoeidheid / slecht geslapen</label>
-      </li>
-
-
- <li>
-        <input type="checkbox" id="item-22" data-advice='Honger / uitdroging'data-more='Uitgebreidere uitleg over regel 2.' />
-        <label for="item-22">Honger / uitdroging</label>
-      </li>
-
-
-
- <li>
-        <input type="checkbox" id="item-23" data-advice='Pijn of ongemak' data-more='Uitgebreidere uitleg over regel 2.'/>
-        <label for="item-23">Pijn of ongemak</label>
-      </li>
-
-
-
-
- <li>
-        <input type="checkbox" id="item-24" data-advice='Te lang in één houding' data-more='Uitgebreidere uitleg over regel 2.'/>
-        <label for="item-24">Te lang in één houding</label>
-      </li>
-   
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-      <!-- Meer vragen toevoegen kan hier -->
-    </ul>
-
-    <div class="controls">
-      <button type="button" id="selectAll">Alles aanvinken</button>
-      <button type="button" id="clearAll" class="secondary">Alles uitvinken</button>
-    </div>
-
-    <div class="advice-area" id="adviceArea" aria-live="polite">
-      <em>Zet een vinkje op een regel om het bijbehorende advies te tonen.</em>
-    </div>
+    <!-- Advies -->
+    <div class="advice-area" id="adviceArea" align="right"><em> (C)2025 MT></div>
     <div id="scoreDisplay"></div>
+
   </form>
 
+
   <script>
-    const form = document.getElementById('checklistForm');
-    const checkboxes = () => Array.from(form.querySelectorAll('input[type="checkbox"]'));
-    const adviceArea = document.getElementById('adviceArea');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    let moreIdCounter = 0;
+  // ===== Helpers voor kleuren/score =====
+  function interpolateColor(c1, c2, f){
+    const r = c1.map((c,i)=>Math.round(c + f*(c2[i]-c)));
+    return `rgb(${r[0]}, ${r[1]}, ${r[2]})`;
+  }
+  function getColorForScore(score){
+    if (score <= 10) return interpolateColor([214,234,255],[255,234,176], score/5);
+    return interpolateColor([255,234,176],[255,2,2], (score-10)/10);
+  }
+  function getItemScore(cb){
+    const qs = cb.parentElement.querySelectorAll('.extra-questions input[type="range"]');
+    if (qs.length < 2) return null;
+    const a = parseInt(qs[0].value,10), b = parseInt(qs[1].value,10);
+    if (Number.isNaN(a) || Number.isNaN(b)) return null;
+    return a + b;
+  }
+  function paintSlider(slider, color){
+    const min = +slider.min || 0, max = +slider.max || 5, val = +slider.value || 0;
+    const pct = ((val - min) / (max - min)) * 100;
+    slider.style.background = `linear-gradient(to right, ${color} ${pct}%, #e9eef7 ${pct}%)`;
+  }
+  function colorizeSliders(cb, color){
+    cb.parentElement.querySelectorAll('.extra-questions input[type="range"]').forEach(sl => paintSlider(sl, color));
+  }
 
-    function interpolateColor(color1, color2, factor) {
-      const res = color1.map((c, i) => Math.round(c + factor * (color2[i] - c)));
-      return `rgb(${res[0]}, ${res[1]}, ${res[2]})`;
+  // ===== Sliders toevoegen/wegdoen =====
+  function ensureSliders(cb){
+    let box = cb.parentElement.querySelector('.extra-questions');
+    if (!cb.checked){
+      if (box) box.remove();
+      return;
     }
-    function getColorForScore(score) {
-      if (score <= 5) {
-        return interpolateColor([214,234,255],[255,243,176], score/5);
-      }
-      return interpolateColor([255,243,176],[255,153,153], (score-5)/5);
-    }
-
-    function getItemScoreFromCheckbox(cbEl){
-      const q = cbEl.parentNode.querySelector('.extra-questions');
-      if (!q) return null;
-      const sliders = q.querySelectorAll('input[type="range"]');
-      if (sliders.length < 2) return null;
-      const a = parseInt(sliders[0].value, 10);
-      const b = parseInt(sliders[1].value, 10);
-      if (Number.isNaN(a) || Number.isNaN(b)) return null;
-      return a + b;
-    }
-
-    function paintSlider(sliderEl, color){
-      const min = parseInt(sliderEl.min,10);
-      const max = parseInt(sliderEl.max,10);
-      const val = parseInt(sliderEl.value,10);
-      const pct = Math.round(((val - min) / (max - min)) * 100);
-      sliderEl.style.background = `linear-gradient(to right, ${color} ${pct}%, #e9eef7 ${pct}%)`;
-    }
-    function colorizeSlidersForCheckbox(cbEl, color){
-      const q = cbEl.parentNode.querySelector('.extra-questions');
-      if (!q) return;
-      q.querySelectorAll('input[type="range"]').forEach(sl => paintSlider(sl, color));
-    }
-
-    function renderAdvices() {
-      adviceArea.innerHTML = '';
-      const checked = checkboxes().filter(cb => cb.checked);
-      if (checked.length === 0) {
-        adviceArea.innerHTML = '<em>Zet een vinkje op een regel om het bijbehorende advies te tonen.</em>';
-        scoreDisplay.textContent = '';
-        return;
-      }
-
-      let totalScore = 0;
-      let countedItems = 0;
-
-      checked.forEach((cb, index) => {
-        const text = cb.dataset.advice || 'Geen advies opgegeven.';
-        const more = cb.dataset.more || '';
-        const wrapper = document.createElement('div');
-        wrapper.className = 'advice';
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = text;
-        wrapper.appendChild(textSpan);
-
-        const itemScore = getItemScoreFromCheckbox(cb);
-        if (itemScore !== null) {
-          const color = getColorForScore(itemScore);
-          wrapper.style.backgroundColor = color;
-          totalScore += itemScore;
-          countedItems += 1;
-          colorizeSlidersForCheckbox(cb, color);
-
-          const badge = document.createElement('span');
-          badge.className = 'score-badge';
-          badge.textContent = `Score: ${itemScore}/10`;
-          badge.style.backgroundColor = color;
-          badge.style.border = '1px solid rgba(0,0,0,0.1)';
-          badge.style.color = '#333';
-          wrapper.appendChild(badge);
-        }
-
-        if (more) {
-          const moreLink = document.createElement('span');
-          moreLink.className = 'more-link';
-          moreLink.setAttribute('role', 'button');
-          moreLink.setAttribute('tabindex', '0');
-          const moreId = `more-${Date.now()}-${moreIdCounter++}`;
-          moreLink.setAttribute('aria-controls', moreId);
-          moreLink.setAttribute('aria-expanded', 'false');
-          moreLink.textContent = ' meer';
-
-          const moreText = document.createElement('div');
-          moreText.id = moreId;
-          moreText.className = 'more-text';
-          moreText.textContent = more;
-
-          wrapper.appendChild(moreLink);
-          wrapper.appendChild(moreText);
-        }
-
-        adviceArea.appendChild(wrapper);
-      });
-
-      if (countedItems > 0) {
-        const avg = totalScore / countedItems;
-        scoreDisplay.textContent = `Totaalscore: ${totalScore} | Gemiddelde per vraag: ${avg.toFixed(1)} / 10`;
-      } else {
-        scoreDisplay.textContent = '';
-      }
-    }
-
-    function ensureExtraQuestionsFor(cb){
-      let q = cb.parentNode.querySelector('.extra-questions');
-      if (!cb.checked) {
-        if (q) q.remove();
-        return;
-      }
-      if (!q) {
-        q = document.createElement('div');
-        q.className = 'extra-questions';
-        q.innerHTML = `
-          <label>Hoe intens beleef je het:
-            <input type="range" min="1" max="5" step="1" value="3">
-            <span>3</span>
-          </label>
-          <label>maandelijks, wekelijks, dagelijks, altijd:
-            <input type="range" min="1" max="5" step="1" value="3">
-            <span>3</span>
-          </label>
-        `;
-        cb.parentNode.appendChild(q);
-
-        const sliders = q.querySelectorAll('input[type="range"]');
-        sliders.forEach(sl => {
+    if (!box){
+      box = document.createElement('div');
+      box.className = 'extra-questions';
+      box.innerHTML = `
+        <label>hoe heftig:
+          <input type="range" min="1" max="10" step="1" value="1">
+          <span>3</span>
+        </label>
+        <label>frequentie: soms (1) - continue (10)):
+          <input type="range" min="1" max="10" step="1" value="1">
+          <span>3</span>
+        </label>
+      `;
+      cb.parentElement.appendChild(box);
+      box.querySelectorAll('input[type="range"]').forEach(sl => {
+        sl.nextElementSibling.textContent = sl.value;
+        sl.addEventListener('input', () => {
           sl.nextElementSibling.textContent = sl.value;
-          sl.addEventListener('input', () => {
-            sl.nextElementSibling.textContent = sl.value;
-            updateUI();
-          });
+          updateUI();
         });
+      });
+    }
+  }
+  function handleSlidersIn(container){
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => ensureSliders(cb));
+  }
+
+  // ===== Adviesoverzicht =====
+  const adviceArea = document.getElementById('adviceArea');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  let moreIdCounter = 0;
+
+  function renderAdvices(){
+    adviceArea.innerHTML = '';
+    const checked = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'));
+    if (!checked.length){
+      adviceArea.innerHTML = '<em>Geen geselecteerde items.</em>';
+      scoreDisplay.textContent = '';
+      return;
+    }
+    let total = 0, count = 0;
+
+    checked.forEach(cb => {
+      const wrap = document.createElement('div');
+      wrap.className = 'advice';
+      const textSpan = document.createElement('span');
+textSpan.innerHTML = cb.dataset.advice || 'Geen adviestekst opgegeven.';
+wrap.appendChild(textSpan);
+      const s = getItemScore(cb);
+      if (s != null){
+        const col = getColorForScore(s);
+        wrap.style.backgroundColor = col;
+        total += s; count++;
+        colorizeSliders(cb, col);
+
+        const badge = document.createElement('span');
+        badge.className = 'score-badge';
+        badge.textContent = `Score: ${s} van 20 (max)`;
+        badge.style.backgroundColor = col;
+        wrap.appendChild(badge);
       }
-    }
 
-    function handleExtraQuestions() {
-      checkboxes().forEach(cb => ensureExtraQuestionsFor(cb));
-    }
+      if (cb.dataset.more){
+        const link = document.createElement('span');
+        link.className = 'more-link';
+        const moreId = `more-${Date.now()}-${moreIdCounter++}`;
+        link.setAttribute('aria-controls', moreId);
+        link.setAttribute('aria-expanded', 'false');
+        link.textContent = ' meer';
 
-    function updateUI(){
-      handleExtraQuestions();
-      renderAdvices();
-    }
+        const panel = document.createElement('div');
+        panel.id = moreId;
+        panel.className = 'more-text';
+        panel.textContent = cb.dataset.more;
 
-    form.addEventListener('click', (e) => {
-      if (adviceArea.contains(e.target)) return;
-      const target = e.target.closest('label, input[type="checkbox"]');
-      if (!target) return;
-      requestAnimationFrame(updateUI);
+        wrap.appendChild(link);
+        wrap.appendChild(panel);
+      }
+      adviceArea.appendChild(wrap);
     });
 
-    adviceArea.addEventListener('click', (e) => {
-      const link = e.target.closest('.more-link');
-      if (!link) return;
-      const panel = document.getElementById(link.getAttribute('aria-controls')) || link.nextElementSibling;
-      if (!panel) return;
-      const expanded = panel.classList.toggle('show');
-      link.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      link.textContent = expanded ? ' minder' : ' meer';
-    });
+   // scoreDisplay.textContent = count ? `Gemiddelde: ${(total / count).toFixed(1)} (max=10)` : '';
+  }
 
-    document.getElementById('selectAll').addEventListener('click', () => {
-      checkboxes().forEach(cb => cb.checked = true);
+  adviceArea.addEventListener('click', (e) => {
+    const link = e.target.closest('.more-link');
+    if (!link) return;
+    const panel = document.getElementById(link.getAttribute('aria-controls'));
+    if (!panel) return;
+    const expanded = panel.classList.toggle('show');
+    link.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    link.textContent = expanded ? ' minder' : ' meer';
+  });
+
+  // ===== Wizard =====
+  const symptomsSection = document.getElementById('symptomsSection');
+  const causesSection = document.getElementById('causesSection');
+  const wizardProgress = document.getElementById('wizardProgress');
+  const causeItems = Array.from(document.querySelectorAll('#causeList .cause-item'));
+  const prevBtn = document.getElementById('prevCause');
+  const nextBtn = document.getElementById('nextCause');
+  const finishBtn = document.getElementById('finishWizard');
+
+  let wizardIndex = 0;
+  let wizardFinished = false;
+
+  function updateWizard(){
+    causeItems.forEach((li, i) => {
+      li.classList.toggle('active', i === wizardIndex);
+      li.style.display = (i === wizardIndex) ? 'block' : 'none';
+    });
+    wizardProgress.textContent = ``;
+    prevBtn.disabled = (wizardIndex === 0);
+    nextBtn.style.display = (wizardIndex < causeItems.length - 1) ? '' : 'none';
+    finishBtn.style.display = (wizardIndex === causeItems.length - 1) ? '' : 'none';
+  }
+
+  prevBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (wizardIndex > 0){
+      wizardIndex--;
+      updateWizard();
       updateUI();
-    });
-    document.getElementById('clearAll').addEventListener('click', () => {
-      checkboxes().forEach(cb => cb.checked = false);
+    }
+  });
+  nextBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (wizardIndex < causeItems.length - 1){
+      wizardIndex++;
+      updateWizard();
       updateUI();
-    });
+    }
+  });
+  finishBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    wizardFinished = true;
+    handleSlidersIn(symptomsSection);
+    handleSlidersIn(causesSection);
+    renderAdvices();
+    adviceArea.scrollIntoView({behavior:'smooth', block:'start'});
+  });
 
+  // ===== Inline "meer" bij de vraag zelf =====
+  document.getElementById('checklistForm').addEventListener('click', (e) => {
+    const btn = e.target.closest('.inline-more');
+    if (!btn) return;
+    const li = btn.closest('li');
+    const input = li.querySelector('input[type="checkbox"]');
+    const panel = li.querySelector('.inline-more-text');
+    if (!panel) return;
+    if (panel.hasAttribute('hidden')){
+      panel.textContent = input?.dataset.more || 'Meer uitleg volgt.';
+      panel.removeAttribute('hidden');
+      btn.textContent = 'minder';
+    } else {
+      panel.setAttribute('hidden', '');
+      btn.textContent = 'meer';
+    }
+  });
+
+  // ===== Symptomen knoppen =====
+  document.getElementById('sympSelectAll').addEventListener('click', () => {
+    symptomsSection.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
     updateUI();
-  </script>
+  });
+  document.getElementById('sympClearAll').addEventListener('click', () => {
+    symptomsSection.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateUI();
+  });
+
+  document.getElementById('goToCauses').addEventListener('click', () => {
+    handleSlidersIn(symptomsSection);
+    symptomsSection.classList.add('hidden');
+    causesSection.classList.remove('hidden');
+    wizardIndex = 0;
+    wizardFinished = false;
+    updateWizard();
+    adviceArea.innerHTML = '<em>Vink alleen aan als dit onderdeel je prikkelt. Klik anders op Volgende</em>';
+    scoreDisplay.textContent = '';
+    updateUI();
+  });
+
+  // ===== UI update =====
+  function updateUI(){
+    handleSlidersIn(symptomsSection);
+    handleSlidersIn(causesSection);
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      const s = getItemScore(cb);
+      if (s != null){
+        const col = getColorForScore(s);
+        colorizeSliders(cb, col);
+      }
+    });
+    if (wizardFinished) renderAdvices();
+  }
+
+  symptomsSection.addEventListener('click', (e) => {
+    if (e.target.closest('label,input[type="checkbox"]')) requestAnimationFrame(updateUI);
+  });
+  causesSection.addEventListener('click', (e) => {
+    if (e.target.closest('label,input[type="checkbox"]')) requestAnimationFrame(updateUI);
+  });
+
+  // ===== Init =====
+  updateWizard();
+  updateUI();
+</script>
+
+     <button type="button" onclick=window.print();>Print deze pagina</button>
+
+
+
 </body>
 </html>
