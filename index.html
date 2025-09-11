@@ -3,498 +3,789 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Checklist NAH prikkelgevoeligheid</title>
+<title>Checklist NAH prikkelgevoeligheid — Wizard</title>
 <style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  body{max-width:860px;margin:36px auto;padding:18px}
-  h1{font-size:1.4rem;margin:0 0 8px}
-  h2{font-size:1.1rem;margin:16px 0 10px}
-  form{background:#cbf5dd;border:1px solid #eee;padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.03)}
-  .section{margin-bottom:18px}
-  .section.hidden{display:none}
-  ul.checklist{list-style:none;padding:0;margin:0}
-  ul.checklist li{display:flex;align-items:flex-start;gap:10px;padding:8px;border-radius:8px}
-  ul.checklist li:hover{background:#cbf5dd}
-  input[type="checkbox"]{width:20px;height:20px;flex-shrink:0;margin-top:4px}
-  label{cursor:pointer;display:inline-block;padding:6px 8px;border-radius:6px}
-  .inline-actions{display:flex;align-items:center;gap:8px;margin:2px 0 0 0}
-  .inline-more{border:1px solid #41dc8e;background:#fff;border-radius:6px;padding:4px 8px;font-size:.88rem;cursor:pointer}
-  .inline-more-text{background:#fff;border:1px dashed #e1e6f0;padding:8px;border-radius:8px;margin:6px 0 0 30px}
-  .extra-questions{margin:8px 0 2px 30px}
-  .extra-questions label{display:block;margin:6px 0}
-  .extra-questions input[type="range"]{
-    -webkit-appearance:none;appearance:none;width:280px;height:6px;border-radius:9999px;background:#2eb774;outline:none
+  :root{--bg:#f7fafc;--card:#F1EEE9;--txt:#0f172a;--muted:#64748b;--accent:#2eb774}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--txt)}
+  .wrap{min-height:100svh;display:grid;place-items:center;padding:20px}
+  .card{width:min(960px,98%);background:var(--card);border:1px solid #e6eef3;border-radius:14px;box-shadow:2 10px 30px rgba(2,6,23,.06);padding:20px}
+  header{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
+  .title{font-size:1.1rem;margin:0}
+  .progress{display:flex;align-items:center;gap:12px;color:#334155;font-size:.95rem}
+  .bar{flex:1;height:10px;background:#eef2f7;border-radius:9999px;overflow:hidden}
+  .bar > span{display:block;height:100%;background:linear-gradient(90deg,#41dc8e,#2eb774);width:0%}
+  .step-area{min-height:360px}
+  h2{margin:0 0 8px;font-size:1.05rem}
+  .meta-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .info-btn{border:1px solid #c7e8d4;background:#fff;border-radius:9999px;padding:6px 10px;font-weight:600;color:#198450;cursor:pointer}
+  .info{display:none;margin:10px 0 0 0;background:#fff;border:1px dashed #e2e8f0;border-radius:10px;padding:12px;color:#374151}
+  .checkbox-row{display:flex;align-items:center;gap:10px;margin:12px 0}
+  .checkbox-row input[type="checkbox"]{width:25px;height:25px}
+  .more-link{color:#198450;cursor:pointer;text-decoration:underline;font-size:.92rem;margin-left:6px}
+  .more-text{display:none;margin-top:8px;font-size:.92rem;background:#fbfdff;border-radius:8px;padding:8px;border:1px dashed #e9eef7}
+  .range-wrap{margin:10px 0}
+  .range-wrap label{display:block;margin-bottom:8px;font-weight:600}
+  input[type="range"]{
+    -webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:9999px;background:#e9eef7;outline:none
   }
-  .extra-questions input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #c4cfe4;cursor:pointer
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:20%;background:#fff;border:2px solid #64748b;cursor:pointer
   }
-  .extra-questions input[type="range"]::-moz-range-thumb{
-    width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #c4cfe4;cursor:pointer
+  input[type="range"]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid #64748b;cursor:pointer
   }
-  .controls,.wizard-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .controls button,.wizard-controls button{min-width:120px;padding:10px 14px;border-radius:8px;border:1px solid #d0d6e6;background:#fff;cursor:pointer}
-  .controls button.secondary,.wizard-controls button.secondary{background:#f7f9fc}
-  .divider{height:1px;background:#e9eef4;margin:10px 0;flex:1 1 100%}
-  .wizard-progress{font-size:.95rem;color:#4a5568;margin:6px 0 8px}
-  .cause-item{display:none}
-  .cause-item.active{display:block}
-  .advice-area{margin-top:16px;padding:12px;border-radius:10px;background:#fff;border:1px dashed #e1e6f0}
-  .advice{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;padding:10px;border-radius:8px;transition:background-color .25s}
-  .score-badge{border-radius:12px;padding:4px 8px;font-size:.86rem;font-weight:700;border:1px solid rgba(0,0,0,.08)}
-  .more-link{color:#198450;cursor:pointer;text-decoration:underline;font-size:.9rem;margin-left:6px}
-  .more-text{display:none;margin-top:6px;font-size:.92rem}
-  .show{display:block}
-  #scoreDisplay{margin-top:10px;font-weight:700}
+  .label{margin-top:6px;font-weight:700}
+  .small{font-size:.92rem;color:var(--muted)}
+  .nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-top:18px}
+  .btn{min-width:120px;padding:10px 14px;border-radius:10px;border:1px solid #d0d6e6;background:#fff;cursor:pointer}
+  .btn.primary{background:var(--accent);color:#fff;border-color:#20a162}
+  .btn.secondary{background:#f7f9fc}
+  .btn[disabled]{opacity:.6;cursor:not-allowed}
+  .step{display:none}
+  .step.active{display:block}
+  .result-item{border:1px solid #e9eef4;border-radius:10px;padding:10px;margin:10px 0;background:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .chip{display:inline-block;border-left:8px solid transparent;background:#f7f7f7;border-radius:8px;padding:6px 10px;font-weight:700;font-size:.95rem;margin-left:8px}
+  .color-dot{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:8px;vertical-align:-2px}
+  .muted{color:#64748b}
+  footer.print{margin-top:12px;text-align:right}
+
  
+  /* Achtergrond per sectie */
+  .step.symptomen {
+    background: #f0f9ff; /* lichtblauw */
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .step.oorzaken {
+    background: #fff7ed; /* lichtoranje */
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+
+
+  /* print rules (schoon en zonder HTML in CSS) */
+  @media print{
+    body{ background:#fff; }
+    .card{ box-shadow:none; border:none; }
+
+    .nav, .info-btn, .progress { display: none !important; }
+
+    /* verberg standaard alle stappen en toon alleen resultaat */
+    .step { display: none !important; }
+    #step-result { display: block !important; visibility: visible !important; position: static !important; width: 100% !important; }
+
+    #printHeader { display: block !important; }
+  }
+
+  /* print header standaard verbergen op scherm */
+  #printHeader { display:none; text-align:center; margin-bottom:20px; }
+  #printLogo { max-height:60px; margin-bottom:10px; }
+  #printDate { font-size:12px; color:#555; }
+
 </style>
+
 </head>
 <body>
-  <h1>Checklist oorzaken overprikkeld zijn</h1>
-
-  <form id="checklistForm" novalidate>
-    <!-- DEEL 1: Symptomen (1–4) -->
-    <section id="symptomsSection" class="section">
-     DEZE PAGINA IS IN DE MAAK. DE TEKSTEN ZIJN ONBRUIKBAAR.     <br> Een testje om jouw gedachten op gang te brengen over punten die te maken kunnen hebben met jouw hersenletsel. Zoek een rustig moment en rustige plek op om deze vragen te bekijken.
-     Kies hieronder eerst een of meerdere symptomen. 
-     
-      <h2>Symptomen</h2>
-      <ul class="checklist" id="symptomList">      
-     <li>
-          <input type="checkbox" id="symp-4" data-advice="Je geeft aan dat voor jouw gevoel alles “te veel” is. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Problemen hebben met -snel- schakelen kan leiden tot aggressieve gevoelens, maar ook vermoeidheid en gewoon het gevoel dat alles te veel is. Hopelijk heb je iets aan de suggesties hierna. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te verwijderen/verminderen waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen">
-          <div>
-            <label for="symp-5">Gevoel dat alles “te veel” is</label>
-            <div class="inline-actions">
-              <button type="button" class="inline-more">meer</button>
-            </div>
-            <div class="inline-more-text" hidden></div>
-          </div>
-        </li>   
-     <li>
-          <input type="checkbox" id="symp-3" data-advice="Je geeft aan dat je last heb van een kort lontje / emotioneel sneller geraakt bent. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet.Kijk naar de door jou aangevinkte oorzaken en denk daar over na. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Kort lontje / emotioneel sneller geraakt zijn is vermoeiend en kan jou en je omgeving onzeker maken. Bekijk daarom goed de oorzaken die hiern volgen. Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten blijft het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen">
-          <div>
-            <label for="symp-3">Kort lontje / emotioneel sneller geraakt</label>
-            <div class="inline-actions">
-              <button type="button" class="inline-more">meer</button>
-            </div>
-            <div class="inline-more-text" hidden></div>
-          </div>
-        </li> 
-     <li>
-     
-          <input type="checkbox" id="symp-1" data-advice="Je geeft aan dat je last heb van Hoofdpijn of druk in je hoofd. Dit kan het gevolg zijn van overprikkeling. Maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Hoofdpijn of druk in hoofd is erg vervelend. Kijk naar de eventuele oorzaken die straks worden voorgelegd. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen.">
-          <div>
-            <label for="symp-1">Hoofdpijn of druk in hoofd</label>
-            <div class="inline-actions">
-              <button type="button" class="inline-more">meer</button>
-            </div>
-            <div class="inline-more-text" hidden></div>
-          </div>
-        </li>
-        <li>
-          <input type="checkbox" id="symp-2" data-advice="Je geeft aan dat je last heb van wazig zien of moeite met scherpstellen.  Dit kan het gevolg zijn van overprikkeling. Maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Wazig zien of moeite met scherpstellen is verwarrend en soms gevaarlijk. Je wit alles wel goed blijven zien. Vraag je dus goed af of de oorzaken die worden gepresenteerd herkenbaar zijn. Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen en waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts of oogarts te raadplegen en minder te vertrouwen op dit soort uitslagen">
-          <div>
-            <label for="symp-2">Wazig zien of moeite met scherpstellen</label>
-            <div class="inline-actions">
-              <button type="button" class="inline-more">meer</button>
-            </div>
-            <div class="inline-more-text" hidden></div>
-          </div>
-        </li>
-       
-        <li>
-          <input type="checkbox" id="symp-4" data-advice="Je geeft aan dat je moeite hebt met concentreren of woorden vinden. De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet. Kijk naar de door jou aangevinkte oorzaken en denk daar over na Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Moeite hebben met concentreren of woorden vinden betekent zeker niet dat je dom bent. Na een NAH is ook dit een veel voorkomende klacht. Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen.">
-          <div>
-            <label for="symp-4">Moeite met concentreren of woorden vinden</label>
-            <div class="inline-actions">
-              <button type="button" class="inline-more">meer</button>
-            </div>
-            <div class="inline-more-text" hidden></div>
-          </div>
-        </li>
-      
-          
-      </ul>
-
-
-      <div class="controls">
-      <button type="button" id="goToCauses" class="secondary"><b>Verder naar vermoedelijke oorzaken</b></button>
- <span class="divider"></span>
-
-       <button type="button" id="sympSelectAll">Alles aanvinken</button>
-        <button type="button" id="sympClearAll" class="secondary">Alles uitvinken</button>
-                     </div>
-    </section>
-
-    <!-- DEEL 2: Oorzaken (wizard; 20 vragen) -->
-    <section id="causesSection" class="section hidden" aria-live="polite">
-      <h2>Vermoedelijke oorzaken</h2>
-      <div class="wizard-progress" id="wizardProgress">testtekst</div>
-
-      <ul class="checklist" id="causeList">
-        <!-- Oorzaak 1..20 (pas de labels/adviezen/uitleg gerust aan) -->
-        <li class="cause-item active">
-          <input type="checkbox" id="cause-1" data-advice="Jouw overgevoeligheid voor knipperende schermen / veel visuele beweging is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Er zijn schermen die rustiger zijn. Kijk hier eens naar in een elektronica zaak. Vaak wordt een e-inkt scherm als prettig ervaren omdat het lijkt op papier. Visuele beweging is veel aanwezig. Niet altijd bewust. Veel reclame-makers willen in korte tijd zoveel mogelijk informatie kwijt. Die snelle infromatie zet zich als trent voor in tv programma s waarin bewust snel wordt gesproken of versneld wordt afgedraaid. Je kunt reclameboodschappen missen door tv programma s achteraf te bekijken. in veel gevallen kijk je dan reclamevrij. Ook hebben steeds meer aanbieders de moglijkheid om de snelheid te vertragen. (oa. Youtube en Netflix). Zeker het ptoberen waard.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more='Knipperende schermen / veel visuele beweging kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen'
-          <div>
-            <label for="cause-1">Knipperende schermen / veel visuele beweging</label>
-                      </div>
-        </li>
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-2" data-advice="Jouw overgevoeligheid voor fel licht / zon / TL-verlichting is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Kun je naar een andere plek gaan waar het licht anders is? Zonnebril? Kijk of de TL vervangen kan worden door LED verlichting. (Ook voor jouw werkgever aantrekkelijke investering).  Als dit niet lukt overleg dan met je huisarts.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Fel licht / zon / TL-verlichting kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-2">Fel licht / zon / TL-verlichting</label></div></li>
-        
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-3" data-advice=" Harde geluiden dragen vaak bij aan overprikkeld raken. Denk hierbij apparaten, schreeuwende mensen, bonkende achtergondmuziek, etc. Jouw overgevoeligheid voor een drukke of rommelige omgeving is een feit en dus niet even af te leren. Wel kun je proberen er mee om te gaan. Soms kun je (onopvallende) oordopjes overwegen of op zoek gaan naar ruimtes waar je het wel fijn vindt. In sommige steden is de openbare bibliotheek zo'n ruimte waar je prikkelarm mensen kun ontmoeten of gewoon je eigen ding doen. Ook komen er steeds meer prikkelarme cafe's en restaurants. Nog niet genoeg, maar het besef groeit. In veel restaurants wordt niet geschockeerd gereageerd als je vraagt of de muziek wat zachter mag. Het is toch ook vreemd dat je - dat je dat schreeuwend boven de muziek uit- op een plek bent waar je elkaar gezellig wilt ontmoeten?  Belangrijk om dit feit te bespreken met jezelf en je omgeving. Begrip en acceptatie vormen een basis voor minder heftige prikkels. Kun je naar een andere plek gaan? Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Een drukke of rommelige omgeving kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-3">Drukke of rommelige omgeving/ Harde geluiden</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-4" data-advice="Je bent gevoelig voor sterke geuren (parfum, schoonmaak, kooklucht). Ook hier geld dat jij zelf op zoek moet gaan naar situaties of een omgeving waar je dit niet tegen komt. Of even de ruimte verlaten. Wees hier vrij in. Als je je hier onzeker over voelt is het belangrijk dit als een feit te accepteren en hierover met de mensen om je heen te communiceren. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Sterke geuren (parfum, schoonmaak, kooklucht) kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-4">Sterke geuren (parfum, schoonmaak, kooklucht)</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-5" data-advice="Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Temperatuur: te warm / koud / benauwd kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-5">Temperatuur: te warm / koud / benauwd</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-6" data-advice="Jouw overgevoeligheid voor een drukke of rommelige omgeving is een feit en is dus niet even af te leren. Wel kun je proberen er mee om te gaan. Soms kun je (onopvallende) oordopjes overwegen of koptelefoon met noice cancelling. Deze techniek wordt ook steeds vaker toegepast in gehoorapparaten terwijl de 'oude' gehoorapparaten deze geluiden vaak versterken. Niet alles is te vermijden, maar even in een andere ruimte gaan zitten of de zojuist genoemde oordopjes kunnen prikkels wegnemen. Houdt ze niet constant in want gewenning ligt op de loer." data-more="Achtergrondgeluid (koelkast, verkeer, airco) kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen"><div><label for="cause-6">Achtergrondgeluid (koelkast, verkeer, airco)</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-7" data-advice="Dit kan het gevolg zijn van overprikkeling. Maar dat hoeft niet.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a> " data-more="Onverwachte aanrakingen of drukte om je heen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-7">Onverwachte aanrakingen of drukte om je heen</label></div></li>
-        
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-8" data-advice="Het klinkt misschien erg effectief. Terwijl jij het nieuws kijkt ook nog even je whatsapp checken. Multitasken draagt bij aan dat overprikkelde gevoel. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Multitasken of snel schakelen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-8">Multitasken of snel schakelen</label></div></li>
-        
-        
-        
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-9" data-advice="Veel nieuwe informatie zorgt sneller voor overprikkeling, omdat je in zo’n situatie veel meer nieuwe details in je op moet nemen .Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Veel nieuwe informatie tegelijk kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-9">Veel nieuwe informatie tegelijk</label></div></li>
-        
-        
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-10" data-advice="Advies bij oorzaak 10.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Gesprekken in een groep volgen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-10">Gesprekken in een groep volgen</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-11" data-advice="Advies bij oorzaak 11.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Snel lezen / veel beeldschermwerk kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-11">Snel lezen / veel beeldschermwerk</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-12" data-advice="Bij een bekende plek weet je bijvoorbeeld de weg, ken je de regels en gewoontes en weet je wat je moet doen. In een nieuwe situatie is alles nieuw en gaat je brein ook vaak heel veel verschillende scenario’s uitdenken om te voorkomen dat het ergens mis gaat .Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Nieuwe omgeving of route kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-12">Nieuwe omgeving of route</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-13" data-advice="Adviesje bij oorzaak 13.Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Stress of spanning in jezelf kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-13">Stress of spanning in mezelf</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-14" data-advice="Emoties die je overneemt van anderen kunnen behoorlijk belastend kunnen zijn. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Sterke emoties van anderen< kunnen een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-14">Sterke emoties van anderen</label></div></div></li>
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-15" data-advice="Advies bij oorzaak 15. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Hectische of onrustige sfeer kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-15">Hectische of onrustige sfeer</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-16" data-advice="Advies bij oorzaak 16. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Vermoeidheid / slecht geslapen kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-16">Vermoeidheid / slecht geslapen</label></div></li>
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-17" data-advice="Advies bij oorzaak 17. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Honger / uitdroging kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-17">Honger / uitdroging</label></div></li>
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-18" data-advice="Advies bij oorzaak 18. Meer info vind je <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>hier</a>" data-more="Pijn of ongemak kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-18">Pijn of ongemak</label></div></li>
-        
-        
-        
-        
-        <li class="cause-item"><input type="checkbox" id="cause-19" data-advice="Advies bij oorzaak 19." data-more="Te lang in één houding kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen."><div><label for="cause-19">Te lang in één houding</label></div></li>
-        
-               
-        <li class="cause-item"><div><label for="cause-20">Resulaat</label>
-        
-      </ul>
-</div></li>
-      <div class="wizard-controls">
-        <button type="button" id="prevCause" class="secondary">Vorige</button>
-        <button type="button" id="nextCause">Volgende</button>
-        <button type="button" id="finishWizard" class="secondary" style="display:none">toon</button>
+<div class="wrap">
+  <div class="card" role="application" aria-labelledby="pageTitle">
+    <header>
+      <h1 class="title" id="pageTitle">Checklist NAH — prikkelgevoeligheid</h1>
+      <div class="progress" aria-hidden="false">
+        <div class="bar" aria-hidden="true"><span id="barFill"></span></div>
+        <div><strong id="stepNum">1</strong>/<span id="stepTotal">1</span></div>
       </div>
-    </section>
+    </header>
 
-    <!-- Advies -->
-    <div class="advice-area" id="adviceArea" align="right"><em> (C)2025 MT></div>
-    <div id="scoreDisplay"></div>
+    <!-- optionele print-header (staat in body, niet in CSS) -->
+    <div id="printHeader" aria-hidden="true">
+      <img src="jouw-logo.png" alt="Logo" id="printLogo">
+      <div id="printDate"></div>
+    </div>
 
-  </form>
+    <main class="step-area" id="stepContainer" aria-live="polite">
+      <!-- Steps worden dynamisch gegenereerd -->
+    </main>
+
+    <div class="nav" id="navRow">
+      <button id="btnPrev" class="btn" aria-label="Vorige">Vorige</button>
+      <div style="display:flex;gap:8px">
+        <button id="btnSkip" class="btn secondary" aria-label="Overslaan">Overslaan</button>
+        <button id="btnNext" class="btn primary" aria-label="Volgende">Volgende</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===== Woordenlabels ===== */
+const heftigheidLabels = ["niks","prikkelend","irritant","zeer heftig","overheersend","ondraaglijk"];
+const frequentieLabels = ["nooit","af en toe","elke maand wel een keer","elke week","elke dag","continue"];
+
+/* ===== Kleur interpolatie — groen → oranje → rood ===== */
+function lerp(a,b,t){return a + (b-a) * t}
+function interpColor(c1,c2,t){
+  const r = Math.round(lerp(c1[0],c2[0],t));
+  const g = Math.round(lerp(c1[1],c2[1],t));
+  const b = Math.round(lerp(c1[2],c2[2],t));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+function colorFor(val,max=5){
+  const t = Math.max(0, Math.min(1, val / max));
+  if (t <= 0.5) return interpColor([74,222,128],[250,204,21], t/0.5);
+  return interpColor([250,204,21],[248,113,113], (t-0.5)/0.5);
+}
+function paintSlider(sl){
+  if(!sl) return;
+  const min = +sl.min || 0, max = +sl.max || 5, val = +sl.value || 0;
+  const pct = ((val - min) / (max - min)) * 100;
+  const col = colorFor(val, max);
+  sl.style.background = `linear-gradient(to right, ${col} ${pct}%, #e9eef7 ${pct}%)`;
+}
+
+/* ===== Vragenlijst (zoals jouw origineel) ===== */
+const QUESTIONS = [
+   {
+    key:"symp_teveel",
+    groep:"Symptomen",
+    title:"Gevoel dat alles “te veel” is",
+    advice:"Als je problemen hebt met -snel- schakelen kan dat leiden tot vermoeidheid en het gevoel dat alles te veel is, en soms agressieve gevoelens.",
+   
+    info:"<b>Voor jouw gevoel is alles “te veel”</b>.<br> De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet altijd. Kijk goed naar de zaken waar je gevoelig voor bent die je straks gaat aanvinken en denk daar over na. Je kunt het straks ook uitprinten of als pdf opslaan om het met iemand anders te bespreken. ",
+    
+   
+    more:"<b>Symptoom: Gevoel dat alles “te veel” is</b><br> Als je problemen hebt met -snel- schakelen kan dat leiden tot vermoeidheid en het gevoel dat alles te veel is, en soms agressieve gevoelens. <br>De prikkels komen ongefilterd binnen en worden ook niet altijd even snel verwerkt. <br>Ze kunnen blijven hangen in je hoofd terwijl de volgenden prikkels zich alweer aandienen. Dat wordt volle bak. Hopelijk heb je iets aan de suggesties hierna. Onderzoek of je in staat bent om de oorzaak/oorzaken weg te nemen of te verminderen, zodat jouw klachten minder worden. <br><br>Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a> "
+  },
+ 
+ 
+ 
+ 
+  {
+    key:"symp_kortlontje",
+    groep:"Symptomen",
+    title:"Kort lontje / emotioneel sneller geraakt",
+    advice:"Kort lontje / emotioneel sneller geraakt zijn is vermoeiend en kan jou en je omgeving onzeker maken.",
+    
+    info:"<b>Je hebt last van een kort lontje of je bent emotioneel sneller geraakt</b> . <br> De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet altijd. Kijk naar de zaken waar je gevoelig voor bent die je straks gaat aanvinken en denk daar over na. Je kunt het straks ook uitprinten of als pdf opslaan om het met iemand anders te bespreken. ",
+   
+    
+    more:"<b>Symptoom: Kort lontje / emotioneel sneller geraakt </b><br>Veel mensen met NAH ervaren een korter lontje of dat ze sneller emotioneel geraakt worden. Dat komt doordat de remfunctie in je hersenen minder sterk kan zijn na hersenletsel: prikkels, emoties en stress komen harder binnen, en je reageert sneller zonder de gebruikelijke filter.<br>Gebruik een stop-teken voor jezelf: zodra je merkt dat je spanning stijgt, pauzeer even. Onverwachte situaties maken emoties sneller heftig.<br>Wacht niet tot je ontploft, maar ga preventief ontladen (wandelen, muziek, ademhalingsoefening).<br>Geef je grenzen aan: zeg tijdig “dit is even te veel voor me”.<br><br>Geef jezelf tijdens een emotionele reactie te ruinte om een time-out te nemen: verlaat de situatie kort, ook al is het maar even naar een andere kamer.<br>Rustig 4 tellen in, 6 tellen uit → verlaagt spanning in je lijf.<br><br>Oefen een vaste zin die bij jou hoort. Bijvoorbeeld: “Ik moet even een pauze nemen, dan praat ik straks verder” → dit geeft jezelf ruimte en de ander duidelijkheid.<br>En achteraf: schrijf van je af, luister muziek, of ga de natuur in om spanning los te laten. Evalueer zacht voor jezelf: wat maakte dat ik sneller reageerde? Niet om jezelf te veroordelen, maar om signalen eerder te leren herkennen. Dit hoort bij NAH, het betekent niet dat je “slecht” bent maar dat je hersenen sneller overbelast raken.<br><br>Bij aanhoudende klachten blijft het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+ 
+ 
+ 
+  {
+    key:"symp_hoofdpijn",
+    groep:"Symptomen",
+    title:"Hoofdpijn of druk in hoofd",
+   advice:"Hoofdpijn of druk in hoofd kan een pijnlijk gevolgzijn van overprikkeling.",
+    
+    info:"<b>Je hebt last van hoofdpijn of druk in je hoofd</b>. <br> De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet altijd. Kijk naar de zaken waar je gevoelig voor bent die je straks gaat aanvinken en denk daar over na. Je kunt het straks ook uitprinten of als pdf opslaan om het met iemand anders te bespreken. ",
+   
+    
+    more:"<b>Symptoom: Hoofdpijn of druk in hoofd </b><br>Hoofdpijn of een drukkend gevoel in je hoofd komt vaak voor na NAH. Het kan ontstaan door overprikkeling, vermoeidheid, spierspanning, concentratie-inspanning of visuele belasting.<br>Als je last van hoofdpijn/ druk ervaart: stop sowieso de activiteit die je doet → forceren maakt het meestal erger.Ga in een stille, prikkelarme ruimte liggen of zitten. Sluit je ogen en adem rustig in en uit. Een koel washandje op je voorhoofd of juist warmte in je nek kan verlichting geven. <br>Voorkomen is beter dan genezen: niet pas rust nemen als de hoofdpijn er al is, maar wees het een stapje voor. <br>Beperk beeldschermtijd en neem regelmatig kijkpauzes. Voor het scherm: zit rechtop, scherm op ooghoogte → scheelt veel nek- en spanningshoofdpijn. <br>Uitdroging verergert hoofdpijn, dus drink enoeg water. En voor de rest: vaste bedtijden en voldoende slaap zijn cruciaal.<br>Kijk naar de eventuele oorzaken die straks worden voorgelegd. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+  
+  
+  
+  
+  {
+    key:"symp_wazig",
+    groep:"Symptomen",
+    title:"Wazig zien of moeite met scherpstellen",
+    advice:"Wazig zien of moeite met scherpstellen kan ook samenhangen met overprikkeling.",
+    
+    info:"<b>Je hebt last van wazig zien of moeite met scherpstellen</b>. <br> De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet altijd. Kijk naar de zaken waar je gevoelig voor bent die je straks gaat aanvinken en denk daar over na. Je kunt het straks ook uitprinten of als pdf opslaan om het met iemand anders te bespreken. ",
+   
+    more:"<b>Symptoom: Wazig zien of moeite met scherpstellen </b><br>Wazig zien of moeite met scherpstellen is verwarrend en soms gevaarlijk. <br>Je ogen zelf kunnen gezond zijn, maar de samenwerking tussen ogen en hersenen kan verstoord zijn. Daardoor kost kijken (lezen, scherpstellen, beeldschermwerk, drukke ruimtes) veel energie en kan het zelfs leiden tot hoofdpijn, duizeligheid of overprikkeling.<br>Neem regelmatige kijkpauzes (20-20-20 regel: elke 20 minuten, 20 seconden kijken naar iets op 20 meter afstand). Sluit even de ogen bij vermoeidheid, laat je oogspieren ontspannen. Gebruik groter lettertype / zoomfunctie op scherm of telefoon zodat je minder hoeft te focussen.<br>Vermijd multitasken met je ogen (bijv. lezen + luisteren tegelijk).<br>Goede verlichting: niet te fel, niet te donker → zachte, egale lichtbronnen zijn rustiger voor je ogen dan TL of fel zonlicht. Beperk visuele drukte: ruim je tafel op, vermijd bewegende of flikkerende beelden. Werk met contrast: zwarte letters op rustige achtergrond lezen vaak beter dan grijs of drukke patronen.<br>Wanneer je in staat bent om de vermoedelijke oorzaak(en) in deze test op een of andere manier te verwijderen/verminderen en waardoor jouw klachten verminderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts of oogarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+ 
+ 
+  {
+    key:"symp_concentratie",
+    groep:"Symptomen",
+    title:"Moeite met concentreren of woorden vinden",
+    advice:"Je concentratie glipt weg, het benoemen van iets bekends lijkt soms niet te lukken.",
+   
+    info:"<b>Je hebt moeite met concentreren of woorden vinden</b>. <br> De oorzaak kan in jouw geval overprikkeling zijn, maar dat hoeft niet altijd. Kijk naar de zaken waar je gevoelig voor bent die je straks gaat aanvinken en denk daar over na. Je kunt het straks ook uitprinten of als pdf opslaan om het met iemand anders te bespreken. ",
+   
+    more:"<b>Symptoom: Moeite met concentreren of woorden vinden</b><br>Je wilt iets zeggen, maar er komen al weer nieuwe prikkels binnen. Je moet schakelen en opeens weet je dat voor de hand liggende woord niet meer. <br>Leg uit aan mensen dat dit door NAH komt, zodat ze niet ongeduldig worden. Geef jezelf tijd, zeg gerust “het woord komt zo, geef me even”. (Met humor kun je heel veel oplossen). Gebruik omschrijvingen: als het juiste woord niet komt, beschrijf het (“het ding om mee te schrijven” i.p.v. “pen”). Probeer taal- en geheugenspelletjes (op een rustig tempo, geen overload). of lees hardop/beschrijf wat je doet.<br>Accepteer grenzen: als je moe bent, wordt concentreren en woorden vinden altijd moeilijker. Plan dan lichter werk. <br>Zorg dat de mensen in jouw omgeving het al weten, als het even niet lukt.  Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+  /* ===== Oorzaken (1..20) ===== */
 
 
-  <script>
-  // ===== Helpers voor kleuren/score =====
-  function interpolateColor(c1, c2, f){
-    const r = c1.map((c,i)=>Math.round(c + f*(c2[i]-c)));
-    return `rgb(${r[0]}, ${r[1]}, ${r[2]})`;
+
+
+
+
+  {
+    key:"cause_1",
+    groep:"Oorzaken",
+    title:"Ik wordt geprikkeld door knipperende schermen / veel visuele beweging",
+    advice:"Sommige schermen en snelle visuele bewegingen kunnen erg vermoeiend zijn. ",
+  
+    info:"<b><br>Je bent overgevoelig voor knipperende schermen / veel visuele beweging</b>. <br> Een gegeven waar je iets mee moet. Knipperende schermen kunnen vervangen worden, visuele beweging kun je soms mijden... ",
+   
+
+    
+   more: "Als je moet werken met beeldschermen,zorg voor korte werktijdblokken: liever 10–15 minuten, dan lange sessies.<br>Combineer schermtaken met papieren taken, E-inkt scherm of fysieke activiteiten.<br>Minimalistisch venstergebruik: maar 1–2 vensters open, geen drukke achtergrond.<br>Rustige apps/sites gebruiken zonder veel visuele afleiding.<br><br>Zorg dat je beeldscherm op 75–120 Hz staat (hoger = minder flikkering).<br>Donkere modus gebruiken of de helderheid dimmen.<br>Blauwlichtfilter of speciale bril gebruiken.<br>Beweging beperken: zet animaties, automatische reclames en pop-ups uit (in browserinstellingen vaak mogelijk).<br><br><br>Bewegende prikkels:<br>Vermijd drukke omgevingen met veel schermen (stations, winkelcentra, sportkantines met tv’s).<br>Kies rustige routes in winkels (bijv. niet langs alle beeldscherm-wanden).<br>Gebruik hulpmiddelen: zonnebril of pet kan helpen om visuele chaos wat te filteren.<br><br>Hopelijk kun je dit feit bespreken met jezelf en je omgeving. Wellicht zijn aanpassingen mogelijk. Er zijn schermen die rustiger zijn. Kijk hier eens naar in een elektronica winkel. Vaak wordt een e-inkt scherm als prettig ervaren omdat het lijkt op papier. Visuele beweging is veel aanwezig. Niet altijd bewust. Veel reclame-makers willen in korte tijd zoveel mogelijk informatie kwijt. Die snelle infromatie zet zich als trent voor in tv programma s waarin bewust snel wordt gesproken of versneld wordt afgedraaid. Je kunt reclameboodschappen missen door tv programma s achteraf te bekijken. In veel gevallen kijk je dan reclamevrij. Ook hebben steeds meer aanbieders de mogenlijkheid om de snelheid te vertragen. (oa. Youtube en Netflix). Zeker het proberen waard. Meer info vind je o.a. op<a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_blank'>de site van de Hersenstichting</a>.",
+   
+  },
+
+
+  {
+    key:"cause_2",
+    groep:"Oorzaken",
+    title:"Ik word snel geprikkeld door fel licht / zon / TL-verlichting",
+   
+    advice:"Fel licht zoals zon of TL kan voor jou best belastend zijn.",
+   
+    info:"<b>Je bent overgevoelig voor fel licht / zon / TL-verlichting</b>. <br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden... ",
+   
+ 
+    more:"Overweeg een zonnebril: ook binnen gebruiken als het nodig is, liefst met meekleurende of gepolariseerde glazen.<br>Pet of hoed: voorkomt dat licht van boven (zon of TL) je direct raakt.<br>Speciale brillenglazen: sommige mensen hebben baat bij gekleurde filters (geel, oranje, blauwfilter) die prikkels verzachten. Een opticien of revalidatiecentrum kan dit testen.<br><br>Thuis:<br>Kies voor warme, dimbare lampen in plaats van fel wit licht of TL.<br>Gebruik gordijnen of lamellen om zonlicht te filteren.<br>Ga zo zitten dat het licht niet recht in je ogen schijnt. Vraag of een lamp gedimd of uitgezet kan worden (vaak is daar begrip voor).Zet jezelf niet direct onder een TL-balk. Vermijd piekuren van fel zonlicht (midden op de dag) als je merkt dat je daar heftig op reageert. Bouw rustmomenten in na blootstelling: ga even naar een donkere of rustige ruimte. Kijk niet te lang naar schermen → gebruik blauwlichtfilter en pauzeer regelmatig.<br>TL-verlichting kan een oorzaak zijn voor jouw klachten. Ga naar een plek waar geen TL-verlichting is of -als dat kan- bespreek het. Overschakelen op led verlichting kan bijvoorbeeld ook voor jouw werkgever aantrekkelijk zijn. Maar maak het bespreekbaar en blijf bij jezelf. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+
+  {
+    key:"cause_3",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door drukke of rommelige omgeving/ harde geluiden",
+    advice:"Je bent overgevoelig voor harde geluiden, rommelige ruimtes of bonkende muziek kunnen prikkels versterken.",
+    info:"<b>Je wordt geprikkeld door harde geluiden of rommelige omgeving</b> <br> Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden... ",
+    
+    
+  more:"Een drukke of rommelige omgeving dragen vaak bij aan overprikkeld raken (ook bij mensen zonder NAH). Denk hierbij aan apparaten, schreeuwende mensen, bonkende achtergondmuziek, etc. <br>Jouw overgevoeligheid voor een drukke of rommelige omgeving is een feit en dus niet even vlot af te leren. <br>Wel kun je leren er mee om te gaan. Je kunt (onopvallende) oordopjes overwegen of op zoek gaan naar ruimtes waar je het wel fijn vindt. In sommige steden is de openbare bibliotheek zo'n ruimte waar je prikkelarm mensen kunt ontmoeten of gewoon je eigen ding doen. Ook komen er steeds meer prikkelarme cafe's en restaurants. Nog niet genoeg, maar het besef groeit. In veel restaurants wordt niet geschockeerd gereageerd als je vraagt of de muziek wat zachter mag. <br><br>Omgaan met harde geluiden<br>Oordoppen met filter of een noise-cancelling koptelefoon dempen storend geluid maar laten stemmen vaak nog verstaanbaar.<br>Rustige achtergrond kiezen: ga niet naast een luidspreker of bij de ingang zitten.<br>Vraag om zachter: laat weten dat harde geluiden je overbelasten, vaak is daar begrip voor.<br>Geluid doseren: zet tv of radio zachter of uit als je bezig bent met iets anders.<br>Kies een rustige plek: ga met je rug tegen een muur of bij een raam zitten, zodat er minder beweging achter je is.<br>Beperk visuele prikkels: ruim spullen op je tafel weg, werk met een rustige achtergrond (ook digitaal: weinig vensters open).<br>Focus op 1 ding tegelijk: richt je aandacht bewust op de persoon of taak die nú belangrijk is.<br>Gebruik visuele hulpmiddelen: notities, lijstjes, pictogrammen geven houvast in een rommelige context.<br><br>Plan prikkelarme momenten: doe boodschappen op rustige tijden, kies stille routes.<br>Verlaat de situatie zodra je merkt dat het te veel wordt → een korte pauze in stilte werkt beter dan forceren.<br>Herstelmomenten: na een drukke omgeving → rust, stilte of natuur om je systeem te kalmeren.<br>Grenzen aangeven: zeg bijvoorbeeld: “Ik merk dat dit te druk is voor me, ik heb even stilte nodig.”<br>Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+ 
+ 
+  },
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  {
+    key:"cause_4",
+    groep:"Oorzaken",
+    title:"Ik wordt geprikkeld door sterke geuren (parfum, schoonmaak, kooklucht)",
+    advice:"Sterke geuren (parfum, schoonmaakmiddelen, kooklucht) kunnen heftige reacties veroorzaken.",
+    
+    info:"<b>Je bent gevoelig voor <b>sterke geuren (parfum, schoonmaak, kooklucht)</b>. <br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...  ",
+   
+    more:"Vermijd triggers waar mogelijk: vraag of mensen in je omgeving geen sterk parfum dragen bij afspraken met jou; kies geurloze of neutrale schoonmaakmiddelen;ventileer goed bij koken.<br>Mond-neusbescherming (lichte mondkap of sjaal) kan in sommige situaties prikkels temperen.<br>Neem afstand: ga verder weg zitten van de geurbron, bijvoorbeeld in een restaurant of bij visite.<br>Gebruiik ongeparfumeerde producten (zeep, wasmiddel, schoonmaak).<br>Afzuigkap of luchtreiniger inzetten bij koken.<br>Koken in fasen: kortere kookmomenten of gerechten die minder geuren verspreiden.<br>Plan je momenten: ga winkelen of naar afspraken wanneer het rustiger is (minder kans op veel geuren tegelijk).<br>Neem iets bij je dat helpt: een sjaal, een mondkapje of zelfs een lichte geur die voor jou neutraal/rustig is (bijv. lavendel op een zakdoek om kort aan te ruiken).<br>Communiceer je gevoeligheid: veel mensen begrijpen het als je uitlegt dat sterke geuren je overprikkelen.<br>Herstelritueel: drink water, spoel je gezicht, of gebruik een eigen vertrouwde geur om je systeem weer te “resetten”. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+
+
+  {
+    key:"cause_5",
+    groep:"Oorzaken",
+    title:"Ik ben erg gevoelig voor temperatuur: te warm / koud / benauwd",
+    advice:"Temperatuur kan invloed hebben en jou overprikkelen",
+    info:"<b>Je bent erg gevoelig voor temperatuur: te warm / koud / benauwd </b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden..",
+   
+    more:"In jouw geval kan je zenuwstelsel anders reageren, waardoor je lichaamstemperatuur minder goed gereguleerd wordt en je sneller last hebt van warmte, kou of benauwdheid. Dat kan vermoeidheid, prikkelbaarheid of hoofdpijn versterken.<br>Bij warmte / benauwdheid: Draag luchtige kleding in laagjes: zodat je altijd iets uit kunt doen. Zet ramen open, gebruik een ventilator (liever niet recht op je gezicht, dat kan ook prikkelen).<br>Hulpmiddelen: koelvest, coldpack in nek of polsen, nat washandje. (Koelvesten of koelhanddoeken verkrijgbaar via revalidatie- of hulpmiddelenwinkels).<br>Vermijd hittepiekmomenten: ga vroeg in de ochtend of later op de avond naar buiten. Hydratatie: regelmatig kleine slokjes water.<br>Bij kou: ook weer laagjes kleding: thermoshirt, vest, sjaal zodat je makkelijk kunt aanpassen. Denk aan een warme kruik, handwarmers of dekentje. Maar ook lichte beweging helpt je lichaamstemperatuur sneller op peil te houden.<br>Algemeen: Ga altijd voorbereid op pad: een sjaal of vest mee, of een waaier/ventilator in je tas. Oefen een rustige ademhaling bij benauwdheid, dit helpt om paniekgevoel te verminderen. Let op binnenklimaat: zorg voor frisse lucht, niet te warm gestookt en niet te benauwd.<br><br>Te warm / koud / benauwd kan dus een oorzaak zijn voor jouw klachten. Aangepaste kleding, luchtkoeling/verversen lijken voor de hand liggende oplossingen, maar het kan moeilijk worden als jouw hele familie in een warm land vakantie wil vieren. Dat los je niet op met een ventilator. Dat zal besproken moeten worden met respect voor alle betrokkenen. En daarin moeten keuzes worden gemaakt. Moeilijk, maar wel verfrissend. <br><br>Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+ 
+ 
+ 
+ 
+  {
+    key:"cause_6",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door achtergrondgeluid (koelkast, verkeer, airco)",
+    advice:"Achtergrondgeluid kan onbewust veel inspanning vragen.",
+    
+    info:"<b>Je wordt geprikkeld door achtergrondgeluid (koelkast, verkeer, airco)</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden..",
+    
+    more:"Geluiden die anderen vaak wegfilteren (koelkast, verkeer, airco, tikkende klok) blijven bij jou nadrukkelijk aanwezig. Dat voelt vermoeiend, leidt af en kan je overprikkelen.<br>Noise-cancelling koptelefoon of oordoppen met filter verminderen achtergrondgeluid maar laten spraak meestal door. Rustige achtergrondgeluiden (white noise, natuurgeluiden, zachte muziek) kunnen storende geluiden maskeren en je brein helpen focussen. Apparaten slim plaatsen: koelkast of ventilator verder weg, deur dicht, of trillingsdempers gebruiken.<br>Aanpassen: Creëer stille zones in huis → een kamer zonder apparaten die brommen of zoemen. Gebruik geluidsabsorptie: gordijnen, tapijt of akoestische panelen maken een ruimte merkbaar stiller. Plan taken slim: werk of rust in momenten waarop het omgevingsgeluid minimaal is (bijv. ’s ochtends vroeg of laat in de avond).<br>Als je overprikkeld bent, neem een korte time-out in stilte (slaapkamer, buiten wandelen). Sluit je ogen en adem rustig uit: helpt spanning en irritatie sneller zakken. Verleg de aandacht door bewust naar iets anders te luisteren (muziek, ademhaling, een podcast).<br><br>Grenzen aangeven: vraag of radio/tv zachter kan, of zet apparaten tijdelijk uit als je focust of rust.<br>Heb je een gehoorapparaat? Deze kan de prikkels som verergeren. Er zijn steeds vaker gehoorapparaten met noicecancelling. Net als de oordoppen/koptelefoons. <br><br>Wordt niet boos op mensen die 'herrie' maken. Daardoor loop je het gevaar dat de geluiden voor jou nog heftiger lijken. Luidruchtigheid kan er soms bij horen. Niet alles is te vermijden, maar even in een andere ruimte gaan zitten of de zojuist genoemde oordopjes kunnen prikkels wegnemen. Houdt ze niet constant in want gewenning ligt op de loer. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+ 
+ 
+ 
+ 
+  {
+    key:"cause_7",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door onverwachte aanrakingen of drukte om me heen",
+    advice:"Onverwachte aanrakingen kunnen schrikreacties en onrust veroorzaken.",
+    
+    info:"<b>Je wordt geprikkeld door onverwachte aanrakingen of drukte om je heen</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden..",
+   
+    more:"Geef je grenzen aan: laat mensen in je omgeving weten dat onverwachte aanrakingen lastig zijn voor jou. Je kunt bijvoorbeeld zeggen: “Wil je me eerst even waarschuwen voordat je me aanraakt?”<br>Kies je plek bewust: ga bij groepen of in wachtruimtes zo staan/zitten dat je rug vrij is (bij een muur, in een hoek). Dat geeft veiligheid en overzicht.<br>Plan prikkelarme momenten: vermijd spitsuren in winkels of drukke evenementen als dat kan.<br>Herstel je ruimte: zet een stap achteruit, draai je schouders of hou een hand subtiel voor je lichaam.<br>Adem bewust: een rustige ademhaling helpt om je stressrespons snel weer te kalmeren.<br>Focuspunt: zoek een vast object of punt om je aandacht kort op te richten, zodat je minder meegesleurd wordt door de chaos om je heen.<br>Geef jezelf ontprikkeltijd: een minuutje stilte, frisse lucht, of gewoon even weg uit de situatie.<br>Ontladen: lichte beweging (wandelen, strekken) kan spanning uit je lijf halen.<br> Drukverlagende kleding (bijv. iets dat niet strak zit) kan helpen om je huid minder gevoelig te maken voor extra prikkels.<br>Gebruik een “persoonlijke buffer”: tas of jas over je arm, zodat mensen minder snel fysiek dichtbij komen.<br>Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen.Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+  {
+    key:"cause_8",
+    groep:"Oorzaken",
+    title:"Ik wordt geprikkeld door multitasken of snel schakelen",
+    advice:"Multitasken verhoogt de belasting.",
+    
+    info:"<b>Je wordt geprikkeld door multitasken of snel schakelen</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+    
+    more:"Vermijd multitasken daarom zoveel mogelijk. Eén ding tegelijk doen helpt je hersenen energie te sparen. Schrijf taken op en streep af: dat geeft rust en voorkomt dat je hoofd “alles tegelijk” probeert vast te houden. Daarnaast is het belangrijk om bewust rust in te plannen. Je brein heeft extra hersteltijd nodig. Wissel taken af met korte rustmomenten in stilte of met ontspanning (ademhaling, rustige muziek, naar buiten kijken). Structuur en routines verminderen prikkels. Als je vaste momenten creeert voor bepaalde activiteiten, hoef je minder vaak te schakelen. Gebruik hulpmiddelen zoals agenda-apps, herinneringen of een papieren planbord, zodat je brein minder belast wordt. Let op vroegsignalen van overprikkeling (bijv. hoofdpijn, vermoeidheid, sneller geïrriteerd). Stop op tijd, voordat je “over het randje” gaat. Geef de mensen in jouw omgeving aan dat snel schakelen voor jou veel energie kost. Vraag of mensen je tijd geven om een taak af te ronden vóór er iets nieuws begint."
+  },
+
+
+
+  {
+    key:"cause_9",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door veel nieuwe informatie tegelijk",
+    advice:"Veel nieuwe input tegelijk kan overweldigend zijn en jou triggeren",
+    
+    
+    info:"<b>Je wordt geprikkeld door veel nieuwe informatie tegelijk</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+  
+    more:"Zorg dat jij de regie houdt bij hoeveel informatie bij jou binnenkomt. Pauzeer indien nodig. Het opnemen op een recorder geeft je de mogelijkheid om later in porties de informaite te verwerken.<br>Vermijd afleiding tijdens deze informatiestroom. Dus geen muziek, pratende mensen, etc. Noteer kernpunten direct: steekwoorden of korte zinnen, zodat je niet alles in je hoofd hoeft vast te houden. Sommige mensen gebruiken een prikkelstop-methode: als het te veel wordt → letterlijk even de ogen sluiten, diep ademhalen en daarna weer verder. <br>Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+  {
+    key:"cause_10",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld als ik gesprekken in een groep moet volgen",
+    advice:"In groepen meerdere stemmen tegelijk volgen is zwaar voor concentratie.",
+    
+    info:"<b>Je wordt geprikkeld als je gesprekken in een groep moet volgen</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+    
+    more:"Ga zitten op een rustige plek in de ruimte (bijv. met je rug naar de muur, minder visuele prikkels). Focus (als je dat al kunt!)op één spreker tegelijk: probeer niet iedereen te volgen. Je mag gerust aangeven dat het je helpt als mensen om de beurt praten. <br>Pauze nemen: geef aan als je even een break nodig hebt (“het wordt me nu even te veel, ik heb een korte pauze nodig”). Een agenda, whiteboard of schema tijdens het gesprek helpt je om niet alles te hoeven onthouden. Overweeg oordoppen met filter: kunnen achtergrondgeluid dempen zonder stemmen weg te halen. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+ 
+ 
+ 
+  {
+    key:"cause_11",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld van snel lezen / veel beeldschermwerk",
+    advice:"Veel schermwerk of snel lezen kan leiden tot visuele en mentale belasting.",
+    
+    info:"<b>Je wordt geprikkeld van snel lezen / veel beeldschermwerk</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+   
+    more:"Gebruik voorleessoftware of tekst-naar-spraak (Word, PDF-readers, browserextensies) zodat je kunt luisteren i.p.v. alles te lezen. Vertraag de input: lees rustig, regelafstand vergroten, grotere letters gebruiken. Beperk visuele prikkels: vergroot het venster van de tekst, werk met donkere modus of een rustige achtergrondkleur. Werk met korte stukken tekst: splits documenten of e-mails op in kleinere brokken, gebruik kopjes of maak een samenvatting voor jezelf. <br>Geen lange sessies. Wissel af met andere taken. Neem regelmatig vaste korte leespauzes. Gebruik een blauwlichtfilter of speciale bril om vermoeidheid te verminderen. Zet onnodige vensters en meldingen uit, zodat je minder visuele afleiding hebt. Als je merkt dat papier rustiger leest, kies daar vaker voor. Print documenteneerst uit. Laat iemand je meehelpen om lange teksten samen te vatten of door te nemen. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+  {
+    key:"cause_12",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld in een nieuwe omgeving of route",
+    advice:"Nieuwe plekken of onbekende route vergen meer informatieverwerking.",
+    
+    info:"<b>Je wordt geprikkeld in een nieuwe omgeving of route</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+ 
+    more:"Bij een bekende plek weet je bijvoorbeeld de weg, ken je de regels en gewoontes en weet je wat je moet doen. In een nieuwe situatie is alles nieuw en gaat je brein ook vaak heel veel verschillende scenario’s uitdenken om te voorkomen dat het ergens mis gaat.<br>Bekijk de omgeving vooraf: gebruik Google Maps of foto’s om alvast een indruk te krijgen. <br>Plan extra tijd: zodat je niet ook nog stress hebt van tijdsdruk. <br>Neem iemand mee: samen voelt vaak veiliger en geeft rust. <br>Werk met stap-voor-stap navigatie i.p.v. een kaart in je hoofd moeten onthouden. Beperk prikkels: luister geen muziek of podcasts, zodat je brein zich kan focussen op oriënteren. <br>Sta even stil (niet midden op de snelweg) als je merkt dat je overweldigd raakt → adem rustig, kijk om je heen, en pak de draad weer op. <br>Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+  {
+    key:"cause_13",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door stress of spanning in mezelf",
+    advice:"Interne stress en spanning verhogen prikkelbaarheid.",
+    
+    info:"<b>Je wordt geprikkeld door stress of spanning in jezelf</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+    
+   
+    more:"Wees er op tijd bij: gespannen spieren, sneller ademen, hartslag omhoog, hoofdpijn,gejaagd denken, kort lontje, moeite met concentreren? <br>Grijp op tijd in. Ga naar een stille plek (wc?) en doe daar een ademhalingsoefening: adem rustig in (4 tellen), houd even vast (2), adem langzaam uit (6). Herhaal 2–3 minuten. <br>Kijk op internet naar meerdere ontspanningsoefeningen die praktisch uitvoerbaar zijn: progressieve spierontspanning, gronden, luister naar zachte muziek, of gebruik een rustgevende geur (bijv. lavendel). Breng structuur aan in de dag: voorspelbaarheid geeft rust, je brein hoeft minder te schakelen, zeg “nee” of stel uit als iets te veel wordt. Verdeel je energie: plan inspanning afgewisseld met echte herstelmomenten (stilte, natuur, ontspanning). Schrijf op wat je bezighoudt, zodat het niet blijft rondmalen in je hoofd. Zorg voor voldoende regelmatige beweging. Ook een goed ritme in je slaap en rust helpt je stressbuffer sterk te houden.<br>Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+
+
+
+  {
+    key:"cause_14",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door de sterke emoties van anderen",
+    advice:"Sterke emoties van anderen kunnen overgenomen worden en zelfs blijven hangen",
+    
+   info:"<b>Je wordt geprikkeld door de sterke emoties van anderen</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+   
+    more:"Laat mensen weten dat sterke emoties je kunnen overprikkelen, zodat ze er rekening mee kunnen houden. <br>Plan herstelruimte: als je weet dat een emotioneel gesprek komt, plan tijd om erna bij te komen. <br>Neem een “veilige positie”: ga zo zitten dat je wat afstand hebt, of kies een plek waar je even weg kunt als het te veel wordt. <br>Visualiseer een beschermende bubbel om je heen: een mentale techniek waarbij je voorstelt dat emoties van anderen minder hard binnenkomen. <br>Focus op je ademhaling: dit houdt je systeem rustiger, zelfs als de ander heftig is. Kijk niet constant in het gezicht van de ander, of richt je blik kort ergens anders op. <br>Bescherm jezelf met grenzen: zeg bijvoorbeeld: “Ik merk dat dit me veel doet, kunnen we het rustiger bespreken?”, “Ik wil graag luisteren, maar ik heb even een pauze nodig.” <br>Belangrijk: de emotie van de ander = niet jouw emotie. Je mag betrokken zijn, zonder alles over te nemen. <br>Ga na afloop even wandelen, adem diep, schrijf kort op wat het gesprek met je deed. Praat erover met een vertrouwd persoon als de emoties van de ander jou blijven bezighouden. Ga iets rustigs doen (muziek, natuur, ontspanning). Het helpt je zenuwstelsel weer in balans te komen. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+
+  {
+    key:"cause_15",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door een hectische of onrustige sfeer",
+    advice:"Hectische omgevingen vragen veel prikkelverwerking.",
+    
+    info:"<b>Je wordt geprikkeld door een hectische of onrustige sfeer</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+  
+    more:"Ga niet in elke drukke situatie mee, maar bepaal wanneer het de moeite waard is en wanneer niet. Bereid je omgeving voor: laat weten dat je gevoelig bent voor drukte, zodat ze er rekening mee kunnen houden. Plan buffer-tijd: zorg dat je vóór en ná een drukke situatie rustmomenten hebt. <br>Tijdens een hectische sfeer: Zoek een rustplek: ga dichter bij een muur, raam of uitgang zitten → minder prikkels en makkelijker weglopen. Hulpmiddelen: oordoppen met filter of een noise-cancelling koptelefoon. Zonnebril of pet tegen visuele drukte. Focus op 1 ding: kies bewust waar je aandacht naartoe gaat (bijv. één gesprekspartner) en laat de rest “op de achtergrond”. Adem rustig en bewust, zodat je zenuwstelsel minder wordt meegesleurd door de hectiek. Verlaat even de ruimte: kort naar buiten of een rustig hoekje opzoeken kan wonderen doen. Zorg dat je na afloop kunt ontprikkelen: stilte, natuur, muziek, of gewoon even niets doen. Niet meteen dóór naar iets anders. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+  {
+    key:"cause_16",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld als ik vermoeid ben / slecht geslapen heb",
+    advice:"Vermoeidheid verlaagt de tolerantie voor prikkels. ",
+    
+    info:"<b>Je wordt geprikkeld als je vermoeid bent / slecht geslapen hebt</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+   
+    more:"<b>Je wordt geprikkeld als je vermoeid bent / slecht geslapen hebt</b><br>Probeer beter om te gaan met slaap en energie. Ga rond dezelfde tijd naar bed en sta op dezelfde tijd op. Zorg voor een slaapvriendelijke omgeving: donkere, stille kamer, koel genoeg. Ontspan voor het slapen: lees iets lichts, luister naar rustige muziek of doe een ademhalingsoefening. nVerdeel overdag je energie: plan intensieve taken in je “beste uren” (vaak de ochtend) en lichtere taken later op de dag. Maar als je nu slecht hebt geslapen: verlaag je verwachtingen: doe minder en kies bewust welke taken echt belangrijk zijn. Gun jezelf kortere werkblokken: liever 10–15 minuten focus, dan jezelf forceren en instorten. Plan extra rustmomenten: bijvoorbeeld even liggen of in stilte zitten. Laat mensen weten dat je een slechte nacht had, zodat ze begrijpen dat je sneller overprikkeld raakt. Bij vermoeidheid: minimaliseer prikkels: werk in een rustige ruimte, zet meldingen uit, beperk gesprekken. Gebruik hulpmiddelen: oordoppen, zonnebril of pet bij fel licht, blauwlichtfilter op schermen. En: één ding tegelijk: multitasken is juist op zo’n dag extra zwaar.<br>Herstel: Korte powernap (max. 20 minuten) kan helpen om je systeem op te frissen. Beweging in rust: een rustige wandeling of lichte rekoefeningen verminderen spanning. Wees extra vriendelijk voor jezelf: accepteer dat je hersenen vandaag minder “bandbreedte” hebben. Bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+  {
+    key:"cause_17",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door honger / uitdroging",
+    advice:"Honger of uitdroging kan concentratie en prikkelbaarheid verhogen.",
+    
+    info:"<b>Je wordt geprikkeld door honger / uitdroging</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+
+    more:"Honger / uitdroging kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+
+
+  {
+    key:"cause_18",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld door pijn of ongemak",
+    advice:"Pijn of lichamelijke ongemakken verlagen de prikkeldrempel.",
+    
+    
+    info:"<b>Je wordt geprikkeld door pijn of ongemak</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+  
+    more:"Pijn of ongemak kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+ 
+ 
+ 
+ 
+ 
+ 
+  {
+    key:"cause_19",
+    groep:"Oorzaken",
+    title:"Ik word geprikkeld als ik te lang in één houding zit/sta",
+    advice:"Te lang in dezelfde houding kan ongemak en prikkelbaarheid veroorzaken.",
+    
+    info:"<b>Je wordt geprikkeld als je te lang in één houding zit/staat</b><br>Accepteer dat er niets te veranderen is aan jouw gevoeligheid, maar soms wel aan de omstandigheden...",
+   
+    more:"Te lang in één houding kan een oorzaak zijn voor jouw klachten maar dat hoeft niet. Wanneer je in staat bent om de vermoedelijke oorzaak/oorzaken in deze test op een of andere manier te mijden, te verminderen of helemaal te verwijderen zou dat fijn zijn. Maar bij aanhoudende klachten is het advies jouw huisarts te raadplegen en minder te vertrouwen op dit soort uitslagen. Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
+  },
+
+
+
+
+  {
+    key:"cause_20",
+    groep:"Oorzaken",
+    title:"Resultaat",
+    advice:"Overzicht en tips volgen op de eindpagina.",
+    info:"",
+    more:"Meer info vind je o.a. op <a href='https://www.hersenstichting.nl/prikkelplan/manieren-om-met-overprikkeling-om-te-gaan/' target='_new'>de site van de Hersenstichting</a>"
   }
-  function getColorForScore(score){
-    if (score <= 10) return interpolateColor([214,234,255],[255,234,176], score/5);
-    return interpolateColor([255,234,176],[255,2,2], (score-10)/10);
-  }
-  function getItemScore(cb){
-    const qs = cb.parentElement.querySelectorAll('.extra-questions input[type="range"]');
-    if (qs.length < 2) return null;
-    const a = parseInt(qs[0].value,10), b = parseInt(qs[1].value,10);
-    if (Number.isNaN(a) || Number.isNaN(b)) return null;
-    return a + b;
-  }
-  function paintSlider(slider, color){
-    const min = +slider.min || 0, max = +slider.max || 5, val = +slider.value || 0;
-    const pct = ((val - min) / (max - min)) * 100;
-    slider.style.background = `linear-gradient(to right, ${color} ${pct}%, #e9eef7 ${pct}%)`;
-  }
-  function colorizeSliders(cb, color){
-    cb.parentElement.querySelectorAll('.extra-questions input[type="range"]').forEach(sl => paintSlider(sl, color));
+];
+
+/* ===== Bouw dynamische stappen (intro + vragen + resultaat) ===== */
+const stepContainer = document.getElementById('stepContainer');
+const totalSteps = 1 + QUESTIONS.length + 1; // intro + items + resultaat
+document.getElementById('stepTotal').textContent = totalSteps;
+
+let currentIndex = 0; // 0 = intro, 1..N = QUESTIONS, last = result
+
+function createIntroStep() {
+  const el = document.createElement('div');
+  el.className = 'step';
+  el.id = 'step-intro';
+  el.innerHTML = `
+    <p class="small">Deze checklist is bedoeld om je bewust te maken van mogelijke symptomen en de oorzaken van overprikkeling bij niet-aangeboren hersenletsel (NAH). Neem even een rustig moment en een stille plek om de vragen door te nemen.</p>
+    <div style="margin-top:18px">
+      <button id="startButton" class="btn primary">Verder</button>
+    </div>
+    <div class="info" id="introInfo">
+      <strong>Vroege signalen van overprikkeling</strong><br>
+      Concentratie glipt weg, moeite om een gesprek te volgen...
+      <hr>
+      <strong>Signalen dat het bijna te veel wordt</strong><br>
+      Plotselinge emotionele uitbarsting (boosheid, huilen)...
+    </div>
+  `;
+  stepContainer.appendChild(el);
+
+  // startButton — gebruik nextStep() (zorg dat nextStep gedefinieerd is)
+  const btn = el.querySelector('#startButton');
+  if (btn) btn.addEventListener('click', () => { currentIndex = 1; showCurrentStep(); });
+}
+
+function createQuestionStep(q, idx) {
+  const el = document.createElement('div');
+  el.className = 'step';
+  // extra class o.b.v. groep
+  if (q.groep === 'Symptomen') el.classList.add('symptomen');
+  else if (q.groep === 'Oorzaken') el.classList.add('oorzaken');
+
+  el.id = `step-${idx+1}`;
+  el.innerHTML = `
+    <div class="meta-row">
+      <span class="small muted">${q.groep}</span>
+    </div>
+    <h2>${q.title}</h2>
+    <div class="small" style="margin-top:10px">${q.advice ? q.advice : ''}</div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="chk-${q.key}" aria-describedby="help-${q.key}">
+      <label for="chk-${q.key}" id="help-${q.key}">Dit herken ik</label>
+    </div>
+    <div id="sliders-${q.key}"></div>
+      <font size= 2> <font color= grey>Je kun waarschijnlijk niets veranderen aan jouw gevoeligheid, maar misschien wel aan de manier waarop je er mee omgaat...
+
+  `;
+  stepContainer.appendChild(el);
+
+  // info button toggle
+  const infoBtn = el.querySelector('.info-btn');
+  if (infoBtn) {
+    infoBtn.addEventListener('click', () => {
+      const info = document.getElementById('info-'+q.key);
+      if (!info) return;
+      info.style.display = info.style.display === 'block' ? 'none' : 'block';
+    });
   }
 
-  // ===== Sliders toevoegen/wegdoen =====
-  function ensureSliders(cb){
-    let box = cb.parentElement.querySelector('.extra-questions');
-    if (!cb.checked){
-      if (box) box.remove();
-      return;
+  // more-link toggle
+  const moreLink = el.querySelector('.more-link');
+  if (moreLink) {
+    moreLink.addEventListener('click', (e) => {
+      const panel = document.getElementById('more-'+q.key);
+      if (!panel) return;
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+      e.target.textContent = panel.style.display === 'block' ? 'minder' : 'meer';
+    });
+  }
+
+  // checkbox logic: when checked, create sliders if not yet
+  const chk = el.querySelector(`#chk-${q.key}`);
+  if (chk) {
+    chk.addEventListener('change', (ev) => {
+      if (ev.target.checked) ensureSlidersFor(q.key);
+      else removeSlidersFor(q.key);
+      updateBarAndResultPreview();
+    });
+  }
+}
+
+function createResultStep() {
+  const el = document.createElement('div');
+  el.className = 'step';
+  el.id = 'step-result';
+  
+  el.innerHTML = `
+    <h2>Resultaat en advies</h2>
+     <div id="resultList"></div>
+    <div style="margin-top:14px">
+      <button id="printBtn" class="btn">Print deze pagina</button>
+    </div>
+  `;
+  stepContainer.appendChild(el);
+
+  el.querySelector('#printBtn').addEventListener('click', ()=> window.print());
+}
+
+/* Bouw alle stappen */
+createIntroStep();
+QUESTIONS.forEach((q, i)=> createQuestionStep(q, i));
+createResultStep();
+
+/* ===== Navigatie & progress ===== */
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnSkip = document.getElementById('btnSkip');
+const stepNumEl = document.getElementById('stepNum');
+const barFill = document.getElementById('barFill');
+
+function showCurrentStep() {
+  // hide all
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  // compute which DOM step to show
+  if (currentIndex === 0) {
+    const el = document.getElementById('step-intro');
+    if (el) el.classList.add('active');
+  } else if (currentIndex >= 1 && currentIndex <= QUESTIONS.length) {
+    const el = document.getElementById(`step-${currentIndex}`);
+    if (el) el.classList.add('active');
+  } else {
+    const el = document.getElementById('step-result');
+    if (el) {
+      el.classList.add('active');
+      buildResult();
     }
-    if (!box){
-      box = document.createElement('div');
-      box.className = 'extra-questions';
-      box.innerHTML = `
-        <label>hoe heftig:
-          <input type="range" min="1" max="10" step="1" value="1">
-          <span>3</span>
-        </label>
-        <label>frequentie: soms (1) - continue (10)):
-          <input type="range" min="1" max="10" step="1" value="1">
-          <span>3</span>
-        </label>
+  }
+  stepNumEl.textContent = currentIndex + 1; // user-facing steps 1..total
+  // progress fill
+  const pct = ((currentIndex) / (totalSteps - 1)) * 100;
+  barFill.style.width = `${pct}%`;
+
+  // Prev disabled on intro
+  btnPrev.disabled = (currentIndex === 0);
+  // Next becomes disabled on result
+  btnNext.disabled = (currentIndex === totalSteps - 1);
+  // Hide Skip on result
+  btnSkip.style.display = (currentIndex === totalSteps - 1) ? 'none' : '';
+}
+showCurrentStep();
+
+btnPrev.addEventListener('click', () => {
+  if (currentIndex > 0) currentIndex--;
+  showCurrentStep();
+});
+btnNext.addEventListener('click', () => {
+  if (currentIndex < totalSteps - 1) currentIndex++;
+  showCurrentStep();
+});
+btnSkip.addEventListener('click', () => {
+  // If we're on a question, uncheck and remove sliders, then move on
+  if (currentIndex >= 1 && currentIndex <= QUESTIONS.length) {
+    const q = QUESTIONS[currentIndex - 1];
+    const chk = document.getElementById(`chk-${q.key}`);
+    if (chk) { chk.checked = false; removeSlidersFor(q.key); }
+  }
+  if (currentIndex < totalSteps - 1) currentIndex++;
+  showCurrentStep();
+});
+
+/* ===== Sliders management per question ===== */
+function ensureSlidersFor(key) {
+  const container = document.getElementById('sliders-'+key);
+  if (!container) return;
+  if (container.querySelector('.extra-questions')) return; // already present
+
+  const html = document.createElement('div');
+  html.className = 'extra-questions';
+  html.innerHTML = `
+    <div class="range-wrap">
+      <label for="heftig-${key}"><font size=2>Hoe heftig:</font></label>
+      <input type="range" id="heftig-${key}" min="0" max="5" step="1" value="0">
+      <div class="label" id="heftigLabel-${key}">${heftigheidLabels[0]}</div>
+    </div>
+    <div class="range-wrap">
+      <label for="freq-${key}"><font size=2>Hoe vaak:</font></label>
+      <input type="range" id="freq-${key}" min="0" max="5" step="1" value="0">
+      <div class="label" id="freqLabel-${key}">${frequentieLabels[0]}</div>
+    </div>
+  `;
+  container.appendChild(html);
+
+  const h = document.getElementById('heftig-'+key);
+  const f = document.getElementById('freq-'+key);
+  const hLabel = document.getElementById('heftigLabel-'+key);
+  const fLabel = document.getElementById('freqLabel-'+key);
+
+  // initial paint
+  paintSlider(h); paintSlider(f);
+
+  if (h) h.addEventListener('input', () => {
+    hLabel.textContent = heftigheidLabels[+h.value];
+    paintSlider(h);
+    const avg = ((+h.value) + (+f.value)) / 2;
+    const col = colorFor(avg, 5);
+    const chip = document.querySelector(`#step-${(QUESTIONS.findIndex(q => q.key === key)+1)} .chip`);
+    if (chip) chip.style.borderLeftColor = col;
+  });
+  if (f) f.addEventListener('input', () => {
+    fLabel.textContent = frequentieLabels[+f.value];
+    paintSlider(f);
+    const avg = ((+h.value) + (+f.value)) / 2;
+    const col = colorFor(avg, 5);
+    const chip = document.querySelector(`#step-${(QUESTIONS.findIndex(q => q.key === key)+1)} .chip`);
+    if (chip) chip.style.borderLeftColor = col;
+  });
+}
+
+function removeSlidersFor(key) {
+  const container = document.getElementById('sliders-'+key);
+  if (!container) return;
+  container.innerHTML = '';
+}
+
+/* ===== Build result page ===== */
+function buildResult() {
+  const list = document.getElementById('resultList');
+  if (!list) return;
+  list.innerHTML = ''; // leegmaken
+
+  QUESTIONS.forEach(q => {
+    const chk = document.getElementById(`chk-${q.key}`);
+    if (chk && chk.checked) {
+      const heftig = document.getElementById(`heftig-${q.key}`);
+      const freq = document.getElementById(`freq-${q.key}`);
+      const hVal = heftig ? +heftig.value : 0;
+      const fVal = freq ? +freq.value : 0;
+      const avg = (hVal + fVal) / 2;
+      const col = colorFor(avg, 5);
+
+      const item = document.createElement('div');
+      item.className = 'result-item';
+      item.innerHTML = `
+        <div>
+          <strong>${q.title}</strong><br>
+          <span class="muted">${q.more || ''}</span>
+        </div>
+        <div class="chip" style="border-left-color:${col}">
+          ${heftigheidLabels[hVal]} / ${frequentieLabels[fVal]}
+        </div>
       `;
-      cb.parentElement.appendChild(box);
-      box.querySelectorAll('input[type="range"]').forEach(sl => {
-        sl.nextElementSibling.textContent = sl.value;
-        sl.addEventListener('input', () => {
-          sl.nextElementSibling.textContent = sl.value;
-          updateUI();
-        });
-      });
-    }
-  }
-  function handleSlidersIn(container){
-    container.querySelectorAll('input[type="checkbox"]').forEach(cb => ensureSliders(cb));
-  }
-
-  // ===== Adviesoverzicht =====
-  const adviceArea = document.getElementById('adviceArea');
-  const scoreDisplay = document.getElementById('scoreDisplay');
-  let moreIdCounter = 0;
-
-  function renderAdvices(){
-    adviceArea.innerHTML = '';
-    const checked = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'));
-    if (!checked.length){
-      adviceArea.innerHTML = '<em>Geen geselecteerde items.</em>';
-      scoreDisplay.textContent = '';
-      return;
-    }
-    let total = 0, count = 0;
-
-    checked.forEach(cb => {
-      const wrap = document.createElement('div');
-      wrap.className = 'advice';
-      const textSpan = document.createElement('span');
-textSpan.innerHTML = cb.dataset.advice || 'Geen adviestekst opgegeven.';
-wrap.appendChild(textSpan);
-      const s = getItemScore(cb);
-      if (s != null){
-        const col = getColorForScore(s);
-        wrap.style.backgroundColor = col;
-        total += s; count++;
-        colorizeSliders(cb, col);
-
-        const badge = document.createElement('span');
-        badge.className = 'score-badge';
-        badge.textContent = `Score: ${s} van 20 (max)`;
-        badge.style.backgroundColor = col;
-        wrap.appendChild(badge);
-      }
-
-      if (cb.dataset.more){
-        const link = document.createElement('span');
-        link.className = 'more-link';
-        const moreId = `more-${Date.now()}-${moreIdCounter++}`;
-        link.setAttribute('aria-controls', moreId);
-        link.setAttribute('aria-expanded', 'false');
-        link.textContent = ' meer';
-
-        const panel = document.createElement('div');
-        panel.id = moreId;
-        panel.className = 'more-text';
-        panel.textContent = cb.dataset.more;
-
-        wrap.appendChild(link);
-        wrap.appendChild(panel);
-      }
-      adviceArea.appendChild(wrap);
-    });
-
-   // scoreDisplay.textContent = count ? `Gemiddelde: ${(total / count).toFixed(1)} (max=10)` : '';
-  }
-
-  adviceArea.addEventListener('click', (e) => {
-    const link = e.target.closest('.more-link');
-    if (!link) return;
-    const panel = document.getElementById(link.getAttribute('aria-controls'));
-    if (!panel) return;
-    const expanded = panel.classList.toggle('show');
-    link.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    link.textContent = expanded ? ' minder' : ' meer';
-  });
-
-  // ===== Wizard =====
-  const symptomsSection = document.getElementById('symptomsSection');
-  const causesSection = document.getElementById('causesSection');
-  const wizardProgress = document.getElementById('wizardProgress');
-  const causeItems = Array.from(document.querySelectorAll('#causeList .cause-item'));
-  const prevBtn = document.getElementById('prevCause');
-  const nextBtn = document.getElementById('nextCause');
-  const finishBtn = document.getElementById('finishWizard');
-
-  let wizardIndex = 0;
-  let wizardFinished = false;
-
-  function updateWizard(){
-    causeItems.forEach((li, i) => {
-      li.classList.toggle('active', i === wizardIndex);
-      li.style.display = (i === wizardIndex) ? 'block' : 'none';
-    });
-    wizardProgress.textContent = ``;
-    prevBtn.disabled = (wizardIndex === 0);
-    nextBtn.style.display = (wizardIndex < causeItems.length - 1) ? '' : 'none';
-    finishBtn.style.display = (wizardIndex === causeItems.length - 1) ? '' : 'none';
-  }
-
-  prevBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (wizardIndex > 0){
-      wizardIndex--;
-      updateWizard();
-      updateUI();
-    }
-  });
-  nextBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (wizardIndex < causeItems.length - 1){
-      wizardIndex++;
-      updateWizard();
-      updateUI();
-    }
-  });
-  finishBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    wizardFinished = true;
-    handleSlidersIn(symptomsSection);
-    handleSlidersIn(causesSection);
-    renderAdvices();
-    adviceArea.scrollIntoView({behavior:'smooth', block:'start'});
-  });
-
-  // ===== Inline "meer" bij de vraag zelf =====
-  document.getElementById('checklistForm').addEventListener('click', (e) => {
-    const btn = e.target.closest('.inline-more');
-    if (!btn) return;
-    const li = btn.closest('li');
-    const input = li.querySelector('input[type="checkbox"]');
-    const panel = li.querySelector('.inline-more-text');
-    if (!panel) return;
-    if (panel.hasAttribute('hidden')){
-      panel.textContent = input?.dataset.more || 'Meer uitleg volgt.';
-      panel.removeAttribute('hidden');
-      btn.textContent = 'minder';
-    } else {
-      panel.setAttribute('hidden', '');
-      btn.textContent = 'meer';
+      list.appendChild(item);
     }
   });
 
-  // ===== Symptomen knoppen =====
-  document.getElementById('sympSelectAll').addEventListener('click', () => {
-    symptomsSection.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
-    updateUI();
-  });
-  document.getElementById('sympClearAll').addEventListener('click', () => {
-    symptomsSection.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    updateUI();
-  });
-
-  document.getElementById('goToCauses').addEventListener('click', () => {
-    handleSlidersIn(symptomsSection);
-    symptomsSection.classList.add('hidden');
-    causesSection.classList.remove('hidden');
-    wizardIndex = 0;
-    wizardFinished = false;
-    updateWizard();
-    adviceArea.innerHTML = '<em>Vink alleen aan als dit onderdeel je prikkelt. Klik anders op Volgende</em>';
-    scoreDisplay.textContent = '';
-    updateUI();
-  });
-
-  // ===== UI update =====
-  function updateUI(){
-    handleSlidersIn(symptomsSection);
-    handleSlidersIn(causesSection);
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      const s = getItemScore(cb);
-      if (s != null){
-        const col = getColorForScore(s);
-        colorizeSliders(cb, col);
-      }
-    });
-    if (wizardFinished) renderAdvices();
+  if (list.innerHTML === '') {
+    list.innerHTML = `<p class="muted">Er zijn geen vragen beantwoord.</p>`;
   }
+}
+/* ===== Utility: kleine live preview update (optioneel) ===== */
+function updateBarAndResultPreview(){
+  // This function could be used to live-update a small preview or do nothing.
+}
 
-  symptomsSection.addEventListener('click', (e) => {
-    if (e.target.closest('label,input[type="checkbox"]')) requestAnimationFrame(updateUI);
-  });
-  causesSection.addEventListener('click', (e) => {
-    if (e.target.closest('label,input[type="checkbox"]')) requestAnimationFrame(updateUI);
-  });
+/* ===== Init: paint all any existing sliders (none initially) ===== */
+document.querySelectorAll('input[type="range"]').forEach(sl => paintSlider(sl));
 
-  // ===== Init =====
-  updateWizard();
-  updateUI();
+/* ===== Accessibility: keyboard navigation (Enter on Next) ===== */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const el = document.activeElement;
+    if (el && (el.tagName === 'INPUT' && el.type !== 'range') || el.tagName === 'TEXTAREA') return;
+    if (!btnNext.disabled) btnNext.click();
+  } else if (e.key === 'ArrowLeft') {
+    if (!btnPrev.disabled) btnPrev.click();
+  } else if (e.key === 'ArrowRight') {
+    if (!btnNext.disabled) btnNext.click();
+  }
+});
+
+/* printDate invullen */
+const printDateEl = document.getElementById('printDate');
+if (printDateEl) printDateEl.textContent = new Date().toLocaleDateString('nl-NL');
+
 </script>
-
-     <button type="button" onclick=window.print();>Print deze pagina</button>
-
-
-
 </body>
 </html>
